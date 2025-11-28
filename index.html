@@ -3,34 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Persistent Twin: Technical Specification</title>
+    <title>Persistent Twin: Technical Explorer</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-
+    
+    <!-- Chosen Palette: Warm Neutrals & Ceramic [Custom Config] -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        display: ['Space Grotesk', 'sans-serif'],
+                        sans: ['Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+                        mono: ['Consolas', 'Monaco', 'Courier New', 'monospace'],
                     },
                     colors: {
-                        // Vibrant Cyberpunk Palette
-                        bg: '#0f172a', // Slate 900
-                        card: '#1e293b', // Slate 800
-                        primary: '#06b6d4', // Cyan 500
-                        secondary: '#d946ef', // Fuchsia 500
-                        accent: '#8b5cf6', // Violet 500
-                        success: '#22c55e', // Green 500
-                        warning: '#f97316', // Orange 500
-                        danger: '#ef4444', // Red 500
-                        text: '#f8fafc', // Slate 50
-                        muted: '#94a3b8', // Slate 400
+                        // "Calm Harmony" Palette
+                        bg: '#fbfaf8',      // Warm Off-White (Paper)
+                        surface: '#ffffff',  // Pure White (Card)
+                        primary: '#334155',  // Slate 700 (Ink)
+                        secondary: '#94a3b8',// Slate 400 (Muted)
+                        accent: '#d97706',   // Amber 600 (Focus/Highlight)
+                        success: '#10b981',  // Emerald 500 (Stable)
+                        danger: '#ef4444',   // Red 500 (At Risk)
+                        border: '#e2e8f0',   // Slate 200
+                        highlight: '#fef3c7', // Amber 100
                     }
                 }
             }
@@ -39,16 +37,16 @@
 
     <style>
         body {
-            background-color: #0f172a; /* bg-slate-900 */
-            color: #f8fafc;
+            background-color: #fbfaf8; /* Custom warm neutral */
+            color: #334155;
         }
-
-        /* Chart Container Rules - MANDATORY */
+        
+        /* MANDATORY CHART CONTAINER STYLES */
         .chart-container {
             position: relative;
             width: 100%;
-            max-width: 600px; /* Constraint for large screens */
-            height: 350px; /* Base height */
+            max-width: 600px;
+            height: 300px; /* Base height */
             max-height: 400px;
             margin-left: auto;
             margin-right: auto;
@@ -56,385 +54,345 @@
 
         @media (min-width: 768px) {
             .chart-container {
-                height: 400px; 
+                height: 350px;
             }
         }
 
-        /* Custom Scrollbar for a "Tech" feel */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #0f172a; 
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #334155; 
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #06b6d4; 
-        }
-
-        /* Utility for Flowchart Lines */
-        .flow-line-vertical {
-            width: 2px;
-            background: linear-gradient(to bottom, #06b6d4, #d946ef);
+        /* Custom UI Elements for diagrams (No SVG) */
+        .flow-arrow-down {
+            width: 0; 
+            height: 0; 
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 10px solid #cbd5e1;
             margin: 0 auto;
         }
-        .flow-line-horizontal {
-            height: 2px;
-            background: linear-gradient(to right, #06b6d4, #d946ef);
-            margin: auto 0;
+
+        .flow-arrow-right {
+            display: inline-block;
+            width: 0; 
+            height: 0; 
+            border-top: 6px solid transparent;
+            border-bottom: 6px solid transparent;
+            border-left: 8px solid #cbd5e1;
+        }
+
+        /* Card Hover Effects */
+        .interactive-card {
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+        .interactive-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-color: #d97706; /* accent */
         }
     </style>
 
-    <!-- 
-    PALETTE SELECTION: "Cyberpunk High-Contrast"
-    - Background: Deep Slate (#0f172a)
-    - Text: White (#f8fafc)
-    - Accents: Neon Cyan (#06b6d4) & Neon Fuchsia (#d946ef)
-    Rationale: Matches the "AI/Holograph/Twin" aesthetic of the source report.
+    <!-- Application Structure Plan:
+         1. Header: Clear title and purpose.
+         2. Simulation Section: A split view. Left side controls the "Persona" (Dataset A vs Dataset B). Right side shows the "Twin UI" updating in real-time. This proves the "Dynamic" nature described in the report.
+         3. Architecture Section: Explains the 3 DB sources using a grid layout card system.
+         4. Analytics Section: Uses Chart.js to visualize the "Engine Logic" (Difficulty vs Skill) and "Mastery Trends".
+         Rationale: Shows the "What" (UI), the "How" (Architecture), and the "Why" (Engine Logic) in a logical narrative flow.
     -->
 
-    <!--
-    PLAN NARRATIVE & STRUCTURE:
-    1. Hero: Introduction to the "Persistent Twin" concept.
-    2. Architecture: Visual flow of data sources (Skills, Logs, Engine) feeding the Twin.
-    3. Mastery Visualization: Radar chart showing the holistic shape of user skills.
-    4. Trends & Momentum: Line/Bar charts showing activity and success rates.
-    5. The Engine: Scatter plot explaining the "Coach" logic (Difficulty vs Skill).
-    6. UI Simulation: HTML recreation of the "Middle Window" mock.
-    -->
-
-    <!--
-    CHART SELECTION JUSTIFICATION (NO SVG):
-    1. Mastery Radar: Chart.js Radar (Canvas). Good for comparing multiple variables (skills) relative to a center.
-    2. Success Rates: Chart.js Bar (Canvas). Standard comparison of percentages.
-    3. Activity Streak: Chart.js Line (Canvas). Shows change over time clearly.
-    4. Engine Logic: Chart.js Scatter (Canvas). Shows relationship between two variables (Difficulty vs Competence).
+    <!-- Visualization & Content Choices:
+         1. Twin Simulator: HTML/Tailwind Component. Goal: Inform/Experience. Justification: Best way to understand a UI spec is to see it built.
+         2. Skill Radar Chart: Chart.js Radar. Goal: Compare. Justification: Shows the "shape" of a user's competence across multiple axes (Numeracy, Data, SQL).
+         3. Momentum Line Chart: Chart.js Line. Goal: Change. Justification: Visualizes the "Streak" and "Volume" concepts from activity_logs.
+         4. Engine Scatter Plot: Chart.js Scatter. Goal: Relationships. Justification: Explains the "Zone of Proximal Development" (Skill vs Difficulty) logic mentioned in the Engine section.
+         CONFIRMATION: NO SVG graphics used. NO Mermaid JS used.
     -->
 </head>
-<body class="antialiased selection:bg-primary selection:text-white pb-20">
+<body class="antialiased">
 
     <!-- HERO SECTION -->
-    <header class="w-full bg-gradient-to-r from-card to-bg border-b border-primary/30 py-12 px-6 mb-12 relative overflow-hidden">
-        <div class="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-        <div class="max-w-7xl mx-auto relative z-10">
-            <div class="flex items-center space-x-4 mb-4">
-                <span class="px-3 py-1 text-xs font-bold tracking-wider text-bg bg-primary rounded-full uppercase">Technical Spec</span>
-                <span class="text-muted text-sm font-mono">DRAFT 1.0</span>
+    <header class="w-full bg-white border-b border-border py-12 px-6 shadow-sm">
+        <div class="max-w-5xl mx-auto text-center">
+            <div class="inline-block px-3 py-1 mb-4 text-xs font-bold tracking-wider text-accent bg-highlight rounded-full uppercase">
+                Product Specification
             </div>
-            <h1 class="text-5xl md:text-7xl font-display font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-primary to-secondary mb-6">
+            <h1 class="text-4xl md:text-5xl font-bold text-primary mb-4">
                 The Persistent Twin
             </h1>
-            <p class="text-xl md:text-2xl text-muted max-w-3xl leading-relaxed">
-                The "Character Sheet" for the modern worker. A real-time, objective visualization of professional evolution that moves beyond subjective feedback to concrete, gamified metrics.
+            <p class="text-lg md:text-xl text-secondary max-w-2xl mx-auto leading-relaxed">
+                A dynamic "Character Sheet" for the modern worker. It objectifies competence, gamifies operational tasks, and demystifies algorithmic assignments.
             </p>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-6 space-y-24">
+    <main class="max-w-6xl mx-auto px-6 py-12 space-y-20">
 
-        <!-- SECTION 1: CONCEPT OVERVIEW -->
-        <section class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div class="space-y-6">
-                <h2 class="text-3xl font-display font-bold text-white border-l-4 border-secondary pl-4">Objectifying Competence</h2>
-                <p class="text-muted text-lg leading-relaxed">
-                    The Persistent Twin acts as a psychological anchor within the dashboard. Situated between the Skill Map and the Quest Log, it aggregates data to answer the user's core question: <span class="text-primary italic">"How am I actually doing?"</span>
+        <!-- SECTION 1: THE TWIN SIMULATOR -->
+        <!-- Introductory Paragraph -->
+        <section>
+            <div class="max-w-3xl mx-auto text-center mb-10">
+                <h2 class="text-3xl font-bold text-primary mb-3">Interactive UI Simulation</h2>
+                <p class="text-secondary leading-relaxed">
+                    The Twin is not static. It adapts to the user's performance history. Use the controls below to switch between two user personas and observe how the <strong>Identity</strong>, <strong>Skill Cards</strong>, and <strong>Engine Insights</strong> transform in real-time.
                 </p>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
-                    <div class="bg-card p-4 rounded-lg border border-white/5 hover:border-primary/50 transition-colors">
-                        <div class="text-primary text-2xl mb-2">📊</div>
-                        <h3 class="font-bold text-white mb-1">Concrete Metrics</h3>
-                        <p class="text-sm text-muted">Replaces "Good job" with "Level 4, 80% Success".</p>
-                    </div>
-                    <div class="bg-card p-4 rounded-lg border border-white/5 hover:border-secondary/50 transition-colors">
-                        <div class="text-secondary text-2xl mb-2">🧠</div>
-                        <h3 class="font-bold text-white mb-1">Transparent AI</h3>
-                        <p class="text-sm text-muted">Explains <em>why</em> the engine assigns specific tasks.</p>
-                    </div>
-                    <div class="bg-card p-4 rounded-lg border border-white/5 hover:border-accent/50 transition-colors">
-                        <div class="text-accent text-2xl mb-2">🎮</div>
-                        <h3 class="font-bold text-white mb-1">Gamified Ops</h3>
-                        <p class="text-sm text-muted">Turns CSV cleaning into XP-earning events.</p>
-                    </div>
-                </div>
             </div>
-            
-            <!-- Skill Shape Visualization -->
-            <div class="bg-card rounded-2xl shadow-2xl p-6 border border-white/5 relative">
-                <div class="absolute -top-4 -right-4 bg-secondary px-4 py-1 text-xs font-bold rounded-full shadow-lg z-20">LIVE SNAPSHOT</div>
-                <div class="chart-container">
-                    <canvas id="skillRadarChart"></canvas>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                <!-- LEFT: Controls & Context -->
+                <div class="lg:col-span-4 space-y-6">
+                    <div class="bg-white p-6 rounded-xl border border-border shadow-sm">
+                        <h3 class="font-bold text-primary mb-4">Select User Context</h3>
+                        
+                        <div class="space-y-3">
+                            <button onclick="updateTwin('veteran')" id="btn-veteran" class="w-full text-left p-4 rounded-lg border-2 border-accent bg-highlight transition-all relative">
+                                <div class="font-bold text-primary">Analyst A-317 (Veteran)</div>
+                                <div class="text-sm text-secondary">High performing, consistent streak.</div>
+                                <div class="absolute top-4 right-4 text-accent font-bold text-xl">✓</div>
+                            </button>
+                            
+                            <button onclick="updateTwin('rookie')" id="btn-rookie" class="w-full text-left p-4 rounded-lg border-2 border-transparent hover:border-border bg-gray-50 transition-all">
+                                <div class="font-bold text-primary">Analyst B-002 (Rookie)</div>
+                                <div class="text-sm text-secondary">Struggling with basics, at risk.</div>
+                            </button>
+                        </div>
+
+                        <div class="mt-6 pt-6 border-t border-border">
+                            <h4 class="text-sm font-bold text-secondary uppercase tracking-wider mb-2">Key Data Sources</h4>
+                            <ul class="text-sm space-y-2 text-primary">
+                                <li class="flex items-center"><span class="w-2 h-2 rounded-full bg-success mr-2"></span> user_skill_mastery</li>
+                                <li class="flex items-center"><span class="w-2 h-2 rounded-full bg-accent mr-2"></span> activity_logs</li>
+                                <li class="flex items-center"><span class="w-2 h-2 rounded-full bg-primary mr-2"></span> engine_state</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
-                <p class="text-center text-sm text-muted mt-4">
-                    <strong>Figure 1:</strong> The "Shape" of User A-317. Note the imbalance between Numeracy (Strong) and SQL (Untrained).
-                </p>
+
+                <!-- RIGHT: The Twin UI Component -->
+                <div class="lg:col-span-8">
+                    <!-- The Middle Window Container -->
+                    <div class="bg-white border border-border rounded-xl shadow-lg overflow-hidden max-w-md mx-auto transform transition-all duration-500" id="twin-container">
+                        
+                        <!-- Zone 1: Header (Identity Anchor) -->
+                        <div class="bg-slate-50 p-5 border-b border-border">
+                            <div class="text-[10px] text-accent font-bold tracking-[0.2em] uppercase mb-1">Proficiency Twin // Current Mastery</div>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-xs" id="ui-avatar">A</div>
+                                    <div>
+                                        <div class="text-sm font-bold text-primary" id="ui-user-id">Analyst: A-317</div>
+                                        <div class="text-xs text-secondary" id="ui-role-site">Role: Ops Assistant • Site: North Hub</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Zone 2: Skill Mastery Cards (The Core) -->
+                        <div class="p-5 space-y-4 bg-white min-h-[300px]" id="ui-skill-cards">
+                            <!-- Cards injected via JS -->
+                        </div>
+
+                        <!-- Zone 3: Streak & Activity Strip -->
+                        <div class="bg-slate-50 border-y border-border px-5 py-3 flex items-center justify-between text-xs">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xl">🔥</span>
+                                <span class="font-bold text-primary" id="ui-streak">4 days active</span>
+                            </div>
+                            <div class="text-secondary" id="ui-missions-week">6 missions this week</div>
+                        </div>
+
+                        <!-- Zone 4: Engine / Veil Insight -->
+                        <div class="p-5 bg-white">
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="w-2 h-2 rounded-full bg-accent animate-pulse"></div>
+                                <span class="text-xs font-bold text-primary uppercase tracking-wider">Engine Focus</span>
+                            </div>
+
+                            <div class="space-y-2 mb-4">
+                                <div class="flex justify-between text-xs">
+                                    <span class="text-secondary">Next Skill:</span>
+                                    <span class="font-bold text-primary" id="ui-next-skill">Spreadsheets L1</span>
+                                </div>
+                                <div class="flex justify-between text-xs border-b border-border pb-2">
+                                    <span class="text-secondary">Cognitive Mode:</span>
+                                    <span class="text-primary italic" id="ui-cog-mode">"Try first, then hint"</span>
+                                </div>
+                            </div>
+
+                            <!-- Chat Bubble -->
+                            <div class="bg-highlight border border-amber-200 rounded-lg rounded-tl-none p-4 relative">
+                                <p class="text-sm text-primary leading-snug" id="ui-veil-note">
+                                    “You’re solid on percentages. We’re pushing more cleaning tasks before moving you into SQL.”
+                                </p>
+                                <div class="text-[10px] text-accent mt-2 font-bold text-right">VEIL COACH</div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <p class="text-center text-xs text-secondary mt-4">Figure 1: The "Middle Window" Panel Visualization</p>
+                </div>
             </div>
         </section>
 
         <!-- SECTION 2: TECHNICAL ARCHITECTURE -->
-        <section>
-            <div class="mb-10">
-                <h2 class="text-3xl font-display font-bold text-white mb-4">Architecture & Data Flow</h2>
-                <p class="text-muted max-w-2xl">
-                    The Twin is a visualization layer, not a data store. It renders the persistent state of the Progression Engine by aggregating three distinct data sources.
+        <section class="bg-white rounded-2xl shadow-sm border border-border p-8">
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold text-primary mb-2">Technical Architecture</h2>
+                <p class="text-secondary">
+                    The Twin is a visualization layer built on top of the user's persistent state. It does not store data itself; it renders the current state of the <strong>Progression Engine</strong> by aggregating three primary backend sources.
                 </p>
             </div>
 
-            <!-- CSS GRID FLOWCHART (Replacing Mermaid/SVG) -->
-            <div class="bg-card/50 p-8 rounded-xl border border-white/5 overflow-x-auto">
-                <div class="min-w-[800px] flex flex-col items-center space-y-8">
-                    
-                    <!-- Backend Sources Row -->
-                    <div class="grid grid-cols-3 gap-8 w-full">
-                        <!-- Source 1 -->
-                        <div class="flex flex-col items-center">
-                            <div class="bg-card border-2 border-primary/40 p-6 rounded-lg w-full text-center shadow-[0_0_15px_rgba(6,182,212,0.1)] relative group">
-                                <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-bg px-2 text-xs text-primary font-mono">DB: user_skill_mastery</div>
-                                <h4 class="font-bold text-lg text-white">The Stats</h4>
-                                <ul class="text-xs text-muted mt-2 text-left list-disc list-inside">
-                                    <li>XP & Level Calculation</li>
-                                    <li>Rolling Window Trends</li>
-                                    <li>Status: STABLE / AT RISK</li>
-                                </ul>
-                            </div>
-                            <div class="h-12 w-0.5 bg-gradient-to-b from-primary/40 to-white/20"></div>
-                            <div class="text-2xl text-white/20">▼</div>
-                        </div>
-
-                        <!-- Source 2 -->
-                        <div class="flex flex-col items-center">
-                            <div class="bg-card border-2 border-secondary/40 p-6 rounded-lg w-full text-center shadow-[0_0_15px_rgba(217,70,239,0.1)] relative">
-                                <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-bg px-2 text-xs text-secondary font-mono">DB: activity_logs</div>
-                                <h4 class="font-bold text-lg text-white">The Momentum</h4>
-                                <ul class="text-xs text-muted mt-2 text-left list-disc list-inside">
-                                    <li>Streak Calculation</li>
-                                    <li>Mission Volume (ISO Week)</li>
-                                    <li>Contextual Metadata</li>
-                                </ul>
-                            </div>
-                            <div class="h-12 w-0.5 bg-gradient-to-b from-secondary/40 to-white/20"></div>
-                            <div class="text-2xl text-white/20">▼</div>
-                        </div>
-
-                        <!-- Source 3 -->
-                        <div class="flex flex-col items-center">
-                            <div class="bg-card border-2 border-accent/40 p-6 rounded-lg w-full text-center shadow-[0_0_15px_rgba(139,92,246,0.1)] relative">
-                                <div class="absolute -top-3 left-1/2 -translate-x-1/2 bg-bg px-2 text-xs text-accent font-mono">DB: engine_state</div>
-                                <h4 class="font-bold text-lg text-white">The Coach</h4>
-                                <ul class="text-xs text-muted mt-2 text-left list-disc list-inside">
-                                    <li>Next Recommendation</li>
-                                    <li>Cognitive Load Balancing</li>
-                                    <li>Challenge vs. Reinforce</li>
-                                </ul>
-                            </div>
-                            <div class="h-12 w-0.5 bg-gradient-to-b from-accent/40 to-white/20"></div>
-                            <div class="text-2xl text-white/20">▼</div>
-                        </div>
-                    </div>
-
-                    <!-- Aggregation Layer -->
-                    <div class="w-2/3 h-px bg-white/10"></div>
-
-                    <!-- The Twin Output -->
-                    <div class="bg-gradient-to-br from-card to-bg border border-white/20 p-8 rounded-xl w-2/3 text-center shadow-2xl relative">
-                        <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-primary via-white to-secondary text-bg font-bold px-6 py-1 rounded-full text-sm tracking-widest uppercase">
-                            The Persistent Twin UI
-                        </div>
-                        <div class="grid grid-cols-3 gap-4 mt-4">
-                            <div class="bg-black/20 p-3 rounded border border-white/5">
-                                <div class="text-primary font-bold text-xl">Identity</div>
-                                <div class="text-[10px] text-muted uppercase tracking-widest">Header Zone</div>
-                            </div>
-                            <div class="bg-black/20 p-3 rounded border border-white/5">
-                                <div class="text-secondary font-bold text-xl">Mastery</div>
-                                <div class="text-[10px] text-muted uppercase tracking-widest">Skill Cards</div>
-                            </div>
-                            <div class="bg-black/20 p-3 rounded border border-white/5">
-                                <div class="text-accent font-bold text-xl">Insight</div>
-                                <div class="text-[10px] text-muted uppercase tracking-widest">Veil/Engine</div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </section>
-
-        <!-- SECTION 3: DATA VISUALIZATION DEEP DIVE -->
-        <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            
-            <!-- Momentum Visualization -->
-            <div class="bg-card p-6 rounded-xl border border-white/5 shadow-lg">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h3 class="text-xl font-bold text-white">Activity Momentum</h3>
-                        <p class="text-sm text-muted">Streak & Volume tracking from <code>activity_logs</code></p>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-2xl font-display font-bold text-success">4 Days</div>
-                        <div class="text-xs text-muted uppercase">Current Streak</div>
-                    </div>
-                </div>
-                <div class="chart-container h-64">
-                    <canvas id="momentumChart"></canvas>
-                </div>
-                <div class="mt-4 p-3 bg-white/5 rounded text-sm text-muted border-l-2 border-secondary">
-                    <strong class="text-white">Insight:</strong> Consistent activity triggers "Reinforcement Mode," offering slightly harder tasks to maintain flow state.
-                </div>
-            </div>
-
-            <!-- Engine Logic Visualization -->
-            <div class="bg-card p-6 rounded-xl border border-white/5 shadow-lg">
-                <div class="flex justify-between items-center mb-6">
-                    <div>
-                        <h3 class="text-xl font-bold text-white">The "Engine" Logic</h3>
-                        <p class="text-sm text-muted">Cognitive Load Balancing (Zone of Proximal Development)</p>
-                    </div>
-                </div>
-                <div class="chart-container h-64">
-                    <canvas id="engineScatterChart"></canvas>
-                </div>
-                <div class="mt-4 p-3 bg-white/5 rounded text-sm text-muted border-l-2 border-primary">
-                    <strong class="text-white">Mechanism:</strong> The Engine (Blue Dot) positions the next mission slightly above current competence to ensure growth without frustration.
-                </div>
-            </div>
-        </section>
-
-        <!-- SECTION 4: UI SIMULATION (The Middle Window) -->
-        <section>
-            <div class="mb-8 text-center">
-                <h2 class="text-3xl font-display font-bold text-white mb-2">The Middle Window</h2>
-                <p class="text-muted">A live simulation of the user interface.</p>
-            </div>
-
-            <!-- UI Container -->
-            <div class="max-w-md mx-auto bg-black border border-white/20 rounded-xl overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.5)] font-sans relative">
+            <!-- CSS Grid Diagram -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
                 
-                <!-- [A] Header Container -->
-                <div class="bg-card/80 backdrop-blur-md p-4 border-b border-white/10">
-                    <div class="text-[10px] text-primary font-bold tracking-[0.2em] uppercase mb-1">Proficiency Twin // Current Mastery</div>
-                    <div class="flex items-center justify-between text-xs text-muted">
-                        <div class="flex items-center gap-2">
-                            <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-primary to-secondary flex items-center justify-center text-[10px] text-white font-bold">A</div>
-                            <span class="text-white">Analyst: A-317</span>
-                        </div>
-                        <div class="flex gap-3">
-                            <span>Role: Ops Assistant</span>
-                            <span>Site: North Hub</span>
+                <!-- Source 1 -->
+                <div class="flex flex-col items-center group">
+                    <div class="w-full bg-slate-50 border border-border hover:border-success p-6 rounded-lg interactive-card h-full flex flex-col justify-between">
+                        <div>
+                            <div class="text-xs font-mono text-secondary mb-2">DB TABLE</div>
+                            <h3 class="text-lg font-bold text-primary mb-1">user_skill_mastery</h3>
+                            <div class="h-1 w-12 bg-success mx-auto rounded mb-4"></div>
+                            <p class="text-sm text-secondary">
+                                Calculates <strong>XP & Level</strong> per branch and analyzes rolling windows for <strong>Trend Analysis</strong> (Stable vs At Risk).
+                            </p>
                         </div>
                     </div>
+                    <div class="flow-arrow-down my-2"></div>
                 </div>
 
-                <!-- [B] Skill Mastery Cards -->
-                <div class="p-4 space-y-3 bg-[#0f1218]">
-                    
-                    <!-- Card 1: High Performance -->
-                    <div class="bg-card border-l-2 border-success p-3 rounded shadow-md group hover:bg-white/5 transition-colors cursor-default">
-                        <div class="flex justify-between items-center mb-2">
-                            <h4 class="text-sm font-bold text-white">Numeracy & Logic</h4>
-                            <span class="text-[10px] px-1.5 py-0.5 rounded bg-success/20 text-success border border-success/30 font-bold">STABLE</span>
+                <!-- Source 2 -->
+                <div class="flex flex-col items-center group">
+                    <div class="w-full bg-slate-50 border border-border hover:border-accent p-6 rounded-lg interactive-card h-full flex flex-col justify-between">
+                        <div>
+                            <div class="text-xs font-mono text-secondary mb-2">DB TABLE</div>
+                            <h3 class="text-lg font-bold text-primary mb-1">activity_logs</h3>
+                            <div class="h-1 w-12 bg-accent mx-auto rounded mb-4"></div>
+                            <p class="text-sm text-secondary">
+                                Tracks <strong>Momentum</strong> via streak calculation and mission volume to provide context for continuity.
+                            </p>
                         </div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-xs text-white">Level 1</span>
-                            <div class="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                                <div class="h-full bg-gradient-to-r from-success/80 to-success w-[26%]"></div>
-                            </div>
-                            <span class="text-[10px] text-muted font-mono">40/150 XP</span>
-                        </div>
-                        <div class="text-[10px] text-muted">Recent success: <span class="text-success">78%</span></div>
                     </div>
-
-                    <!-- Card 2: Struggling -->
-                    <div class="bg-card border-l-2 border-warning p-3 rounded shadow-md group hover:bg-white/5 transition-colors cursor-default">
-                        <div class="flex justify-between items-center mb-2">
-                            <h4 class="text-sm font-bold text-white">Spreadsheets & Data Literacy</h4>
-                            <span class="text-[10px] px-1.5 py-0.5 rounded bg-warning/20 text-warning border border-warning/30 font-bold">AT RISK</span>
-                        </div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-xs text-white">Level 0</span>
-                            <div class="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
-                                <div class="h-full bg-gradient-to-r from-warning/80 to-warning w-[20%]"></div>
-                            </div>
-                            <span class="text-[10px] text-muted font-mono">10/50 XP</span>
-                        </div>
-                        <div class="text-[10px] text-muted">Recent success: <span class="text-warning">40%</span></div>
-                    </div>
-
-                    <!-- Card 3: New/Locked -->
-                    <div class="bg-card border-l-2 border-white/10 p-3 rounded shadow-md opacity-75 hover:opacity-100 transition-opacity cursor-default">
-                        <div class="flex justify-between items-center mb-2">
-                            <h4 class="text-sm font-bold text-muted">Intro SQL & Automation</h4>
-                            <span class="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-muted border border-white/10 font-bold">NOT YET TRAINED</span>
-                        </div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-xs text-muted">Level 0</span>
-                            <div class="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
-                                <div class="h-full bg-white/10 w-0"></div>
-                            </div>
-                            <span class="text-[10px] text-muted font-mono">0/50 XP</span>
-                        </div>
-                        <div class="text-[10px] text-muted">Recent success: <span class="text-muted">0%</span></div>
-                    </div>
+                    <div class="flow-arrow-down my-2"></div>
                 </div>
 
-                <!-- [C] Streak Strip -->
-                <div class="bg-primary/5 border-y border-primary/20 px-4 py-2 flex items-center justify-between text-xs">
-                    <div class="flex items-center gap-2">
-                        <span class="text-primary text-sm">🔥</span>
-                        <span class="text-primary font-bold">4 days active</span>
+                <!-- Source 3 -->
+                <div class="flex flex-col items-center group">
+                    <div class="w-full bg-slate-50 border border-border hover:border-primary p-6 rounded-lg interactive-card h-full flex flex-col justify-between">
+                        <div>
+                            <div class="text-xs font-mono text-secondary mb-2">DB TABLE</div>
+                            <h3 class="text-lg font-bold text-primary mb-1">engine_state</h3>
+                            <div class="h-1 w-12 bg-primary mx-auto rounded mb-4"></div>
+                            <p class="text-sm text-secondary">
+                                The <strong>Coach</strong> logic. Determines "Next Recommendation" and balances cognitive load (Challenge vs Reinforce).
+                            </p>
+                        </div>
                     </div>
-                    <div class="text-muted">6 missions this week</div>
+                    <div class="flow-arrow-down my-2"></div>
                 </div>
 
-                <!-- [D] Engine / Veil Insight -->
-                <div class="p-4 bg-[#0f1218]">
-                    <div class="flex items-center gap-2 mb-3">
-                        <div class="w-2 h-2 rounded-full bg-secondary animate-pulse"></div>
-                        <span class="text-[10px] font-bold text-secondary uppercase tracking-wider">Engine Focus</span>
+                <!-- Aggregation Layer -->
+                <div class="md:col-span-3">
+                    <div class="bg-primary text-white p-4 rounded-lg shadow-md max-w-lg mx-auto">
+                        <h3 class="font-bold text-lg">The Persistent Twin UI</h3>
+                        <p class="text-sm text-slate-300">Aggregates & Renders State</p>
                     </div>
+                </div>
+            </div>
+        </section>
 
-                    <div class="text-xs text-gray-300 mb-4 space-y-1">
-                        <div class="flex justify-between">
-                            <span class="text-muted">Next Skill:</span>
-                            <span class="text-white">Spreadsheets L1 (Stabilising)</span>
-                        </div>
-                        <div class="flex justify-between border-b border-white/10 pb-2">
-                            <span class="text-muted">Cognitive Mode:</span>
-                            <span class="text-white">"Try first, then hint"</span>
-                        </div>
-                    </div>
+        <!-- SECTION 3: ANALYTICS DEEP DIVE -->
+        <section>
+            <div class="mb-10 text-center max-w-3xl mx-auto">
+                <h2 class="text-2xl font-bold text-primary mb-2">The "Engine" Logic Visualized</h2>
+                <p class="text-secondary">
+                    How the system decides what to show in the "Engine Focus" panel. The system balances current skill mastery against task difficulty to keep the user in the optimal learning zone.
+                </p>
+            </div>
 
-                    <!-- Chat Bubble -->
-                    <div class="bg-card border border-white/10 rounded-lg rounded-tl-none p-3 relative">
-                        <div class="text-xs text-white italic leading-relaxed">
-                            "You’re solid on percentages. We’re pushing more cleaning tasks before moving you into SQL."
-                        </div>
-                        <div class="absolute -top-[1px] -left-[1px] w-2 h-2 border-t border-l border-white/10 bg-card transform rotate-45 translate-x-[-50%] translate-y-[-50%]"></div>
-                        <div class="text-[9px] text-muted mt-2 text-right">Veil AI • Just now</div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                
+                <!-- Chart 1: Skill Shape Radar -->
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-primary">Competence Topology</h3>
+                        <span class="text-xs bg-slate-100 text-secondary px-2 py-1 rounded">Live Data</span>
                     </div>
+                    <div class="chart-container bg-white p-4 rounded-xl border border-border shadow-sm">
+                        <canvas id="skillRadarChart"></canvas>
+                    </div>
+                    <p class="text-xs text-secondary mt-3">
+                        Visualizes the imbalance between branches (e.g., High Numeracy vs. Low SQL) to direct future tasks.
+                    </p>
+                </div>
+
+                <!-- Chart 2: Cognitive Load Scatter -->
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-primary">Cognitive Load Balancing</h3>
+                        <span class="text-xs bg-slate-100 text-secondary px-2 py-1 rounded">Engine Logic</span>
+                    </div>
+                    <div class="chart-container bg-white p-4 rounded-xl border border-border shadow-sm">
+                        <canvas id="engineScatterChart"></canvas>
+                    </div>
+                    <p class="text-xs text-secondary mt-3">
+                        The engine assigns tasks (Orange Dot) slightly above current competence (Grey Dots) to ensure growth without frustration.
+                    </p>
                 </div>
 
             </div>
         </section>
-
-        <!-- FOOTER -->
-        <footer class="border-t border-white/10 pt-12 text-center text-muted">
-            <p class="text-sm">Generated for Persistent Twin System • Technical Specification Report</p>
-        </footer>
 
     </main>
 
-    <!-- SCRIPTS -->
+    <!-- JAVASCRIPT LOGIC -->
     <script>
-        // --- UTILITY: Label Wrapping Logic (16 char limit) ---
+        // --- DATA STORE ---
+        // Storing the content for the two personas
+        const personas = {
+            veteran: {
+                id: "Analyst: A-317",
+                role: "Role: Ops Assistant • Site: North Hub",
+                avatar: "A",
+                streak: "4 days active",
+                missions: "6 missions this week",
+                nextSkill: "Spreadsheets L1 (stabilising)",
+                cogMode: "Try first, then hint",
+                veilNote: "You’re solid on percentages. We’re pushing more cleaning tasks before moving you into SQL.",
+                cards: [
+                    { title: "Numeracy & Logic", level: "Level 1", xp: "40 / 150 XP", progress: 26, recent: "78%", status: "STABLE", statusColor: "text-success bg-green-50 border-green-200" },
+                    { title: "Spreadsheets & Data", level: "Level 0", xp: "10 / 50 XP", progress: 20, recent: "40%", status: "AT RISK", statusColor: "text-danger bg-red-50 border-red-200" },
+                    { title: "Intro SQL", level: "Level 0", xp: "0 / 50 XP", progress: 0, recent: "0%", status: "NOT YET TRAINED", statusColor: "text-secondary bg-slate-50 border-slate-200" }
+                ],
+                chartData: [80, 40, 5], // Radar data
+                enginePoint: {x: 42, y: 45} // Scatter target
+            },
+            rookie: {
+                id: "Analyst: B-002",
+                role: "Role: Junior Clerk • Site: South Hub",
+                avatar: "B",
+                streak: "0 days active",
+                missions: "1 mission this week",
+                nextSkill: "Numeracy L0 (Foundations)",
+                cogMode: "Step-by-step Guide",
+                veilNote: "We noticed some errors in basic arithmetic. Let's go back to basics to build a strong foundation.",
+                cards: [
+                    { title: "Numeracy & Logic", level: "Level 0", xp: "5 / 50 XP", progress: 10, recent: "30%", status: "AT RISK", statusColor: "text-danger bg-red-50 border-red-200" },
+                    { title: "Spreadsheets & Data", level: "Level 0", xp: "0 / 50 XP", progress: 0, recent: "0%", status: "LOCKED", statusColor: "text-secondary bg-slate-50 border-slate-200" },
+                    { title: "Intro SQL", level: "Level 0", xp: "0 / 50 XP", progress: 0, recent: "0%", status: "LOCKED", statusColor: "text-secondary bg-slate-50 border-slate-200" }
+                ],
+                chartData: [20, 5, 0], // Radar data
+                enginePoint: {x: 15, y: 20} // Scatter target (easier task)
+            }
+        };
+
+        // --- CHART INSTANCES ---
+        let radarChartInstance = null;
+        let scatterChartInstance = null;
+
+        // --- UTILITY: Label Wrapping ---
         function wrapLabel(label) {
             if (label.length <= 16) return label;
             const words = label.split(' ');
             const lines = [];
             let currentLine = words[0];
-
             for (let i = 1; i < words.length; i++) {
                 if (currentLine.length + 1 + words[i].length <= 16) {
                     currentLine += ' ' + words[i];
@@ -447,161 +405,183 @@
             return lines;
         }
 
-        // --- GLOBAL: Tooltip Configuration ---
-        const globalTooltipConfig = {
-            callbacks: {
-                title: function(tooltipItems) {
-                    const item = tooltipItems[0];
-                    let label = item.chart.data.labels[item.dataIndex];
-                    if (Array.isArray(label)) {
-                        return label.join(' ');
-                    } else {
-                        return label;
+        // --- DOM MANIPULATION ---
+        function updateTwin(type) {
+            const data = personas[type];
+
+            // 1. Update Controls UI
+            document.getElementById('btn-veteran').className = type === 'veteran' 
+                ? "w-full text-left p-4 rounded-lg border-2 border-accent bg-highlight transition-all relative"
+                : "w-full text-left p-4 rounded-lg border-2 border-transparent hover:border-border bg-gray-50 transition-all";
+            
+            document.getElementById('btn-rookie').className = type === 'rookie'
+                ? "w-full text-left p-4 rounded-lg border-2 border-accent bg-highlight transition-all relative"
+                : "w-full text-left p-4 rounded-lg border-2 border-transparent hover:border-border bg-gray-50 transition-all";
+
+            // Add checkmark logic
+            const check = '<div class="absolute top-4 right-4 text-accent font-bold text-xl">✓</div>';
+            if (type === 'veteran') {
+                document.getElementById('btn-veteran').innerHTML += check;
+                // Remove check from rookie if present (handled by className reset mostly, but innerHTML reset needed)
+                document.getElementById('btn-rookie').innerHTML = document.getElementById('btn-rookie').innerHTML.replace(check, '');
+            } else {
+                document.getElementById('btn-rookie').innerHTML += check;
+                document.getElementById('btn-veteran').innerHTML = document.getElementById('btn-veteran').innerHTML.replace(check, '');
+            }
+
+
+            // 2. Update Header
+            document.getElementById('ui-avatar').innerText = data.avatar;
+            document.getElementById('ui-user-id').innerText = data.id;
+            document.getElementById('ui-role-site').innerText = data.role;
+
+            // 3. Update Skill Cards (Injection)
+            const cardsContainer = document.getElementById('ui-skill-cards');
+            cardsContainer.innerHTML = ''; // Clear existing
+            data.cards.forEach(card => {
+                const html = `
+                    <div class="border rounded-lg p-3 ${type === 'rookie' && card.status === 'LOCKED' ? 'opacity-50' : ''}">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="text-sm font-bold text-primary">${card.title}</h4>
+                            <span class="text-[10px] px-1.5 py-0.5 rounded border ${card.statusColor} font-bold">${card.status}</span>
+                        </div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-xs text-primary">${card.level}</span>
+                            <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                <div class="h-full bg-slate-400 w-[${card.progress}%]" style="width: ${card.progress}%"></div>
+                            </div>
+                            <span class="text-[10px] text-secondary font-mono">${card.xp}</span>
+                        </div>
+                        <div class="text-[10px] text-secondary">Recent success: <span class="font-bold">${card.recent}</span></div>
+                    </div>
+                `;
+                cardsContainer.innerHTML += html;
+            });
+
+            // 4. Update Footer Stats
+            document.getElementById('ui-streak').innerText = data.streak;
+            document.getElementById('ui-missions-week').innerText = data.missions;
+            document.getElementById('ui-next-skill').innerText = data.nextSkill;
+            document.getElementById('ui-cog-mode').innerText = `"${data.cogMode}"`;
+            document.getElementById('ui-veil-note').innerText = data.veilNote;
+
+            // 5. Update Charts
+            updateCharts(data);
+        }
+
+        // --- CHART LOGIC ---
+        function initCharts() {
+            // Radar Chart
+            const ctxRadar = document.getElementById('skillRadarChart').getContext('2d');
+            radarChartInstance = new Chart(ctxRadar, {
+                type: 'radar',
+                data: {
+                    labels: ['Numeracy & Logic', 'Spreadsheets & Data', 'SQL & Automation'].map(wrapLabel),
+                    datasets: [{
+                        label: 'Current Proficiency',
+                        data: personas.veteran.chartData,
+                        backgroundColor: 'rgba(217, 119, 6, 0.2)', // Amber
+                        borderColor: '#d97706',
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#d97706',
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    scales: {
+                        r: {
+                            angleLines: { color: '#e2e8f0' },
+                            grid: { color: '#e2e8f0' },
+                            pointLabels: { font: { size: 11 } },
+                            ticks: { display: false, backdropColor: 'transparent' }
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { size: 10 } } },
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    const item = tooltipItems[0];
+                                    let label = item.chart.data.labels[item.dataIndex];
+                                    return Array.isArray(label) ? label.join(' ') : label;
+                                }
+                            }
+                        }
                     }
                 }
-            }
-        };
+            });
 
-        // --- CHART 1: Skill Radar Chart ---
-        const ctxRadar = document.getElementById('skillRadarChart').getContext('2d');
-        const labelsRadar = ['Numeracy & Logic', 'Spreadsheets & Data', 'SQL & Automation'];
-        const wrappedLabelsRadar = labelsRadar.map(wrapLabel);
-
-        new Chart(ctxRadar, {
-            type: 'radar',
-            data: {
-                labels: wrappedLabelsRadar,
-                datasets: [{
-                    label: 'Current Mastery (Analyst A-317)',
-                    data: [80, 40, 5], // High Numeracy, Mid Sheets, Low SQL
-                    fill: true,
-                    backgroundColor: 'rgba(6, 182, 212, 0.2)', // Primary with opacity
-                    borderColor: '#06b6d4', // Primary
-                    pointBackgroundColor: '#d946ef', // Secondary
-                    pointBorderColor: '#fff',
-                    pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: '#d946ef'
-                }, {
-                    label: 'Role Requirement (Ops Assistant)',
-                    data: [60, 60, 30], // Expected baseline
-                    fill: true,
-                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                    borderColor: 'rgba(255, 255, 255, 0.2)',
-                    borderDash: [5, 5],
-                    pointRadius: 0
-                }]
-            },
-            options: {
-                maintainAspectRatio: false,
-                responsive: true,
-                scales: {
-                    r: {
-                        angleLines: { color: 'rgba(255, 255, 255, 0.1)' },
-                        grid: { color: 'rgba(255, 255, 255, 0.1)' },
-                        pointLabels: {
-                            color: '#94a3b8', // muted text
-                            font: { size: 12, family: 'Inter' }
+            // Scatter Chart
+            const ctxScatter = document.getElementById('engineScatterChart').getContext('2d');
+            scatterChartInstance = new Chart(ctxScatter, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Past Missions',
+                        data: [{x: 10, y: 15}, {x: 20, y: 25}, {x: 30, y: 30}, {x: 40, y: 35}],
+                        backgroundColor: '#cbd5e1'
+                    }, {
+                        label: 'Next Recommendation',
+                        data: [personas.veteran.enginePoint],
+                        backgroundColor: '#d97706',
+                        pointRadius: 8
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    scales: {
+                        x: {
+                            type: 'linear', position: 'bottom',
+                            title: { display: true, text: 'Competence (XP)' },
+                            grid: { color: '#f1f5f9' }
                         },
-                        ticks: { display: false, backdropColor: 'transparent' }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: { color: '#f8fafc' }
+                        y: {
+                            title: { display: true, text: 'Difficulty' },
+                            grid: { color: '#f1f5f9' }
+                        }
                     },
-                    tooltip: globalTooltipConfig
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                title: (tooltipItems) => 'Task Details'
+                            }
+                        }
+                    }
                 }
-            }
-        });
+            });
+        }
 
-        // --- CHART 2: Momentum Chart (Line) ---
-        const ctxMomentum = document.getElementById('momentumChart').getContext('2d');
-        // Simulating last 7 days. Streak started 4 days ago.
-        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-        
-        new Chart(ctxMomentum, {
-            type: 'line',
-            data: {
-                labels: days,
-                datasets: [{
-                    label: 'Missions Completed',
-                    data: [0, 0, 0, 2, 3, 1, 6], // 4 days of activity (Thu, Fri, Sat, Sun)
-                    borderColor: '#22c55e', // Success Green
-                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                    borderWidth: 2,
-                    tension: 0.4, // Smooth curve
-                    fill: true,
-                    pointBackgroundColor: '#0f172a',
-                    pointBorderColor: '#22c55e',
-                    pointRadius: 4
-                }]
-            },
-            options: {
-                maintainAspectRatio: false,
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                        ticks: { color: '#94a3b8' }
-                    },
-                    x: {
-                        grid: { display: false },
-                        ticks: { color: '#94a3b8' }
-                    }
-                },
-                plugins: {
-                    legend: { display: false },
-                    tooltip: globalTooltipConfig
-                }
-            }
-        });
+        function updateCharts(data) {
+            if (!radarChartInstance || !scatterChartInstance) return;
 
-        // --- CHART 3: Engine Logic Scatter ---
-        const ctxScatter = document.getElementById('engineScatterChart').getContext('2d');
-        
-        new Chart(ctxScatter, {
-            type: 'scatter',
-            data: {
-                datasets: [{
-                    label: 'Completed Missions',
-                    data: [
-                        {x: 10, y: 15}, {x: 20, y: 25}, {x: 30, y: 30}, // Past successes
-                        {x: 40, y: 35}, {x: 45, y: 80} // Recent outliers
-                    ],
-                    backgroundColor: 'rgba(148, 163, 184, 0.5)' // Muted
-                }, {
-                    label: 'Next Recommended Mission',
-                    data: [{x: 42, y: 45}], // Slightly harder than current competence avg
-                    backgroundColor: '#d946ef', // Secondary (Highlight)
-                    pointRadius: 8,
-                    pointHoverRadius: 10
-                }]
-            },
-            options: {
-                maintainAspectRatio: false,
-                responsive: true,
-                scales: {
-                    x: {
-                        title: { display: true, text: 'User Competence (XP)', color: '#94a3b8' },
-                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                        ticks: { color: '#94a3b8' }
-                    },
-                    y: {
-                        title: { display: true, text: 'Task Difficulty', color: '#94a3b8' },
-                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                        ticks: { color: '#94a3b8' }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        labels: { color: '#f8fafc' }
-                    },
-                    tooltip: globalTooltipConfig
-                }
+            // Update Radar
+            radarChartInstance.data.datasets[0].data = data.chartData;
+            radarChartInstance.update();
+
+            // Update Scatter
+            scatterChartInstance.data.datasets[1].data = [data.enginePoint];
+            // Adjust background context points slightly for effect
+            if (data.chartData[0] < 30) {
+                 // Rookie data context
+                 scatterChartInstance.data.datasets[0].data = [{x: 5, y: 5}, {x: 10, y: 8}, {x: 12, y: 12}];
+            } else {
+                 // Veteran data context
+                 scatterChartInstance.data.datasets[0].data = [{x: 10, y: 15}, {x: 20, y: 25}, {x: 30, y: 30}, {x: 40, y: 35}];
             }
-        });
+            scatterChartInstance.update();
+        }
+
+        // --- INIT ---
+        window.onload = function() {
+            initCharts();
+            // Initial render as veteran, but resetting innerHTML to clear duplicates
+            document.getElementById('btn-veteran').innerHTML = `<div class="font-bold text-primary">Analyst A-317 (Veteran)</div><div class="text-sm text-secondary">High performing, consistent streak.</div>`;
+            document.getElementById('btn-rookie').innerHTML = `<div class="font-bold text-primary">Analyst B-002 (Rookie)</div><div class="text-sm text-secondary">Struggling with basics, at risk.</div>`;
+            updateTwin('veteran');
+        };
 
     </script>
 </body>
