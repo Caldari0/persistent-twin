@@ -1,0 +1,503 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { 
+  Activity, 
+  Shield, 
+  Box, 
+  FileText, 
+  Terminal, 
+  Layout, 
+  Sun, 
+  Moon, 
+  Cpu, 
+  CheckCircle, 
+  AlertTriangle,
+  ArrowRight,
+  Database,
+  Crosshair,
+  Send,
+  RefreshCw
+} from 'lucide-react';
+
+// --- THEME & STYLES ---
+const cssStyles = `
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap');
+
+  /* --- VOYAGER THEME (IMMERSIVE) --- */
+  [data-theme='voyager'] {
+    --bg-primary: #050508;
+    --bg-secondary: #0b0c15;
+    --bg-tertiary: rgba(0, 243, 255, 0.05);
+    --text-primary: #00f3ff;
+    --text-secondary: rgba(0, 243, 255, 0.6);
+    --accent: #00f3ff;
+    --accent-dim: rgba(0, 243, 255, 0.2);
+    --danger: #ff2a6d;
+    --success: #05ffa1;
+    --border: rgba(0, 243, 255, 0.3);
+    --glass: rgba(11, 12, 21, 0.85);
+    --font-display: 'Orbitron', sans-serif;
+    --font-body: 'JetBrains Mono', monospace;
+    --radius: 4px;
+    --scanline: true;
+  }
+
+  /* --- PROFESSIONAL THEME (CLASSIC) --- */
+  [data-theme='professional'] {
+    --bg-primary: #f8fafc;
+    --bg-secondary: #ffffff;
+    --bg-tertiary: #f1f5f9;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --accent: #2563eb;
+    --accent-dim: #dbeafe;
+    --danger: #ef4444;
+    --success: #10b981;
+    --border: #e2e8f0;
+    --glass: rgba(255, 255, 255, 0.95);
+    --font-display: 'Inter', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --radius: 12px;
+    --scanline: false;
+  }
+
+  body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Scanline Effect for Voyager */
+  .scanlines::before {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    z-index: 50;
+    background-size: 100% 2px, 3px 100%;
+    pointer-events: none;
+    opacity: 0.4;
+  }
+
+  .card-hover:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 15px var(--accent-dim);
+  }
+
+  /* Utilities */
+  .font-display { font-family: var(--font-display); }
+  .font-mono { font-family: 'JetBrains Mono', monospace; }
+  
+  input:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-dim);
+  }
+`;
+
+// --- DATA & CONTENT ---
+
+// The "Single Truth" dataset for the mission
+const MANIFEST_DATA = [
+  { id: 'C-104', item: 'Hydraulic Pumps', count: 4, weightPer: 12.5, recordedTotal: 50.0 },
+  { id: 'C-105', item: 'Thermal Couplers', count: 20, weightPer: 0.5, recordedTotal: 10.0 },
+  { id: 'C-106', item: 'Gravity Coils', count: 10, weightPer: 1.5, recordedTotal: 10.0 }, // ERROR: Should be 15.0
+  { id: 'C-107', item: 'Struct. Bolts', count: 100, weightPer: 0.1, recordedTotal: 10.0 },
+  { id: 'C-108', item: 'Control Chips', count: 50, weightPer: 0.2, recordedTotal: 10.0 },
+];
+
+const CORRECT_ROW_ID = 'C-106';
+const CORRECT_TOTAL = 15.0;
+
+// --- COMPONENTS ---
+
+// 1. The Veil (AI Guide)
+const Veil = ({ theme, step, status }) => {
+  const getMessage = () => {
+    if (theme === 'voyager') {
+      if (step === 'dashboard') return "Sector Analysis: Data integrity compromised in Logistics Quadrant 4. Pattern matching protocols required.";
+      if (step === 1) return "Mission Active: Scan the manifest. Visual sensors detect a mass discrepancy. Identify the corrupted signal.";
+      if (step === 2) return "Anomaly Isolated. Calculate the true mass of the Gravity Coils to restore equilibrium.";
+      if (step === 3) return "Link established with Dispatch Command. Transmit a remediation report. Keywords required: ID, True Value, Action.";
+      if (step === 'complete') return "Sector Stabilized. XP allocated. System integrity at 99%.";
+    } else {
+      if (step === 'dashboard') return "Welcome back. You have pending tasks in the Logistics module. Accuracy check required.";
+      if (step === 1) return "Task 1: Audit the shipment log. One of these totals is incorrect based on the unit weight and count.";
+      if (step === 2) return "Task 2: Correction. Calculate the correct total weight for the highlighted row.";
+      if (step === 3) return "Task 3: Report. Write a brief note to the warehouse manager explaining the error and the fix.";
+      if (step === 'complete') return "Module complete. Results logged. Great work.";
+    }
+  };
+
+  return (
+    <div className="border border-[var(--border)] bg-[var(--bg-secondary)] p-4 rounded-[var(--radius)] mb-6 flex gap-4 items-start shadow-sm transition-all">
+      <div className={`p-2 rounded-full ${theme === 'voyager' ? 'bg-[var(--accent-dim)] animate-pulse' : 'bg-blue-100'}`}>
+        <Cpu size={20} className="text-[var(--accent)]" />
+      </div>
+      <div>
+        <h4 className="text-xs font-bold uppercase tracking-wider opacity-60 mb-1">
+          {theme === 'voyager' ? 'The Veil // AI Guide' : 'Learning Assistant'}
+        </h4>
+        <p className="text-sm opacity-90 leading-relaxed max-w-prose">
+          {getMessage()}
+        </p>
+      </div>
+    </div>
+  );
+};
+
+// 2. The Twin (Dashboard)
+const Dashboard = ({ theme, xp, streak, onStart }) => {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in zoom-in duration-500">
+      {/* Sector Card */}
+      <div className="md:col-span-2 border border-[var(--border)] bg-[var(--glass)] p-6 rounded-[var(--radius)] relative overflow-hidden group card-hover">
+        <div className="absolute top-0 right-0 p-4 opacity-20">
+          <Database size={120} />
+        </div>
+        <div className="relative z-10">
+          <span className="inline-block px-2 py-1 text-xs font-bold border border-[var(--accent)] text-[var(--accent)] rounded mb-4 uppercase tracking-widest">
+            {theme === 'voyager' ? 'Sector: Pilot' : 'Module: Logistics'}
+          </span>
+          <h2 className="text-3xl font-bold font-display mb-2">
+            {theme === 'voyager' ? 'Data Numeracy L1' : 'Basic Inventory Math'}
+          </h2>
+          <p className="opacity-70 mb-8 max-w-md">
+            {theme === 'voyager' 
+              ? 'Sanity check cargo manifests before orbital launch. Failure results in orbital decay.' 
+              : 'Learn to validate shipment weights and prevent costly shipping errors.'}
+          </p>
+          
+          <button 
+            onClick={onStart}
+            className="flex items-center gap-2 bg-[var(--accent)] text-[var(--bg-primary)] px-6 py-3 rounded-[var(--radius)] font-bold hover:opacity-90 transition-all"
+          >
+            {theme === 'voyager' ? 'INITIATE SEQUENCE' : 'Start Module'} <ArrowRight size={18} />
+          </button>
+        </div>
+      </div>
+
+      {/* Stats Column */}
+      <div className="space-y-6">
+        {/* XP Card */}
+        <div className="border border-[var(--border)] bg-[var(--bg-secondary)] p-5 rounded-[var(--radius)]">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-xs uppercase tracking-wider opacity-60">Mastery</span>
+            <Activity size={16} className="text-[var(--success)]" />
+          </div>
+          <div className="text-4xl font-display font-bold mb-2">{xp} <span className="text-sm opacity-50">XP</span></div>
+          <div className="w-full h-2 bg-[var(--bg-tertiary)] rounded-full overflow-hidden">
+            <div className="h-full bg-[var(--success)] w-[65%]" />
+          </div>
+        </div>
+
+        {/* Risk/Status Card */}
+        <div className="border border-[var(--border)] bg-[var(--bg-secondary)] p-5 rounded-[var(--radius)]">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-xs uppercase tracking-wider opacity-60">Status</span>
+            <Shield size={16} className={streak > 2 ? 'text-[var(--success)]' : 'text-[var(--danger)]'} />
+          </div>
+          <div className="font-display text-xl font-bold">
+            {streak > 2 ? 'STABLE' : 'AT RISK'}
+          </div>
+          <p className="text-xs opacity-60 mt-1">
+            {theme === 'voyager' ? 'Pattern recognition nominal.' : 'Consistent performance.'}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// 3. Mission Logic Components
+const MissionView = ({ theme, step, setStep, setXp }) => {
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [calcInput, setCalcInput] = useState('');
+  const [reportInput, setReportInput] = useState('');
+  const [feedback, setFeedback] = useState(null); // { type: 'success' | 'error', msg: '' }
+
+  // Mission 1: Pattern Recognition
+  const handleRowClick = (id) => {
+    if (step !== 1) return;
+    setSelectedRow(id);
+    if (id === CORRECT_ROW_ID) {
+      setFeedback({ type: 'success', msg: theme === 'voyager' ? 'ANOMALY DETECTED. PROCEED.' : 'Correct. That row has the error.' });
+      setTimeout(() => { setFeedback(null); setStep(2); }, 1500);
+    } else {
+      setFeedback({ type: 'error', msg: theme === 'voyager' ? 'SCAN NEGATIVE. NO ERROR FOUND.' : 'Incorrect. Check the unit weight vs count.' });
+    }
+  };
+
+  // Mission 2: Calculation
+  const handleCalcSubmit = () => {
+    const val = parseFloat(calcInput);
+    if (val === CORRECT_TOTAL) {
+       setFeedback({ type: 'success', msg: theme === 'voyager' ? 'CALCULATION VERIFIED. SYNCING...' : 'Correct calculation.' });
+       setTimeout(() => { setFeedback(null); setStep(3); }, 1500);
+    } else {
+       setFeedback({ type: 'error', msg: theme === 'voyager' ? 'MATH MISMATCH. HULL INTEGRITY RISK.' : 'Incorrect. Try: Count x Weight.' });
+    }
+  };
+
+  // Mission 3: Report (Simulated SLM)
+  const handleReportSubmit = () => {
+    const text = reportInput.toLowerCase();
+    // Rudimentary "SLM" keyword check
+    const hasRow = text.includes('c-106') || text.includes('coils');
+    const hasValue = text.includes('15') || text.includes('15.0');
+    const hasAction = text.includes('update') || text.includes('fix') || text.includes('change') || text.includes('correct');
+
+    if (hasRow && hasValue) {
+       setFeedback({ type: 'success', msg: theme === 'voyager' ? 'TRANSMISSION RECEIVED. SECTOR CLEARED.' : 'Report submitted successfully.' });
+       setXp(prev => prev + 150);
+       setTimeout(() => { setFeedback(null); setStep('complete'); }, 1500);
+    } else {
+       setFeedback({ type: 'error', msg: theme === 'voyager' ? 'TRANSMISSION REJECTED. DATA UNCLEAR.' : 'Report needs detail: Which row? What value?' });
+    }
+  };
+
+  return (
+    <div className="max-w-3xl mx-auto animate-in slide-in-from-bottom-4 duration-500">
+      
+      {/* Dynamic Feedback Banner */}
+      {feedback && (
+        <div className={`mb-4 p-3 rounded text-sm font-bold flex items-center gap-2 ${feedback.type === 'success' ? 'bg-[var(--success)] text-black' : 'bg-[var(--danger)] text-white'}`}>
+          {feedback.type === 'success' ? <CheckCircle size={16}/> : <AlertTriangle size={16}/>}
+          {feedback.msg}
+        </div>
+      )}
+
+      {/* THE MANIFEST TABLE */}
+      <div className={`border border-[var(--border)] bg-[var(--bg-secondary)] rounded-[var(--radius)] overflow-hidden mb-6 ${step === 1 ? 'ring-2 ring-[var(--accent)] ring-offset-2 ring-offset-[var(--bg-primary)]' : ''}`}>
+        <div className="p-3 border-b border-[var(--border)] bg-[var(--bg-tertiary)] flex justify-between items-center">
+          <span className="font-mono text-xs opacity-70">MANIFEST ID: #8842-A</span>
+          {step === 1 && <span className="text-[var(--accent)] text-xs font-bold animate-pulse">SELECT INVALID ROW</span>}
+        </div>
+        <table className="w-full text-left text-sm">
+          <thead>
+            <tr className="opacity-60 border-b border-[var(--border)]">
+              <th className="p-3">ID</th>
+              <th className="p-3">Item</th>
+              <th className="p-3 text-right">Count</th>
+              <th className="p-3 text-right">Unit (kg)</th>
+              <th className="p-3 text-right">Total (kg)</th>
+            </tr>
+          </thead>
+          <tbody className="font-mono">
+            {MANIFEST_DATA.map((row) => (
+              <tr 
+                key={row.id}
+                onClick={() => handleRowClick(row.id)}
+                className={`border-b border-[var(--border)] last:border-0 cursor-pointer transition-colors
+                  ${step === 1 ? 'hover:bg-[var(--accent-dim)]' : ''}
+                  ${step > 1 && row.id !== CORRECT_ROW_ID ? 'opacity-30' : ''}
+                  ${selectedRow === row.id || (step > 1 && row.id === CORRECT_ROW_ID) ? 'bg-[var(--accent-dim)]' : ''}
+                `}
+              >
+                <td className="p-3 font-bold text-[var(--accent)]">{row.id}</td>
+                <td className="p-3">{row.item}</td>
+                <td className="p-3 text-right">{row.count}</td>
+                <td className="p-3 text-right">{row.weightPer}</td>
+                <td className={`p-3 text-right font-bold ${step > 1 && row.id === CORRECT_ROW_ID ? 'text-[var(--danger)] line-through decoration-2' : ''}`}>
+                  {row.recordedTotal.toFixed(1)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* MISSION 2: INPUT */}
+      {step === 2 && (
+        <div className="border border-[var(--border)] bg-[var(--glass)] p-6 rounded-[var(--radius)] animate-in fade-in slide-in-from-bottom-2">
+          <h3 className="text-lg font-bold mb-4 font-display flex items-center gap-2">
+            <Crosshair size={20} className="text-[var(--accent)]"/>
+            {theme === 'voyager' ? 'ENTER CORRECTED MASS' : 'Enter Correct Total'}
+          </h3>
+          <div className="flex gap-4">
+             <input 
+               type="number" 
+               className="bg-[var(--bg-primary)] border border-[var(--border)] p-3 rounded-[var(--radius)] flex-grow font-mono text-lg text-[var(--text-primary)]"
+               placeholder="0.0"
+               value={calcInput}
+               onChange={(e) => setCalcInput(e.target.value)}
+             />
+             <button 
+               onClick={handleCalcSubmit}
+               className="bg-[var(--accent)] text-[var(--bg-primary)] px-6 rounded-[var(--radius)] font-bold hover:brightness-110"
+             >
+               VERIFY
+             </button>
+          </div>
+        </div>
+      )}
+
+      {/* MISSION 3: REPORT */}
+      {step === 3 && (
+        <div className="border border-[var(--border)] bg-[var(--glass)] p-6 rounded-[var(--radius)] animate-in fade-in slide-in-from-bottom-2">
+           <h3 className="text-lg font-bold mb-4 font-display flex items-center gap-2">
+            <FileText size={20} className="text-[var(--accent)]"/>
+            {theme === 'voyager' ? 'TRANSMIT LOG ENTRY' : 'Submit Error Report'}
+          </h3>
+          <p className="text-sm opacity-70 mb-4">
+            {theme === 'voyager' 
+             ? 'Uplink to Dispatch. State the Target ID, True Value, and Protocol Action.' 
+             : 'Tell the manager which ID was wrong, what the real weight is, and that you updated it.'}
+          </p>
+          <textarea 
+            className="w-full h-24 bg-[var(--bg-primary)] border border-[var(--border)] p-3 rounded-[var(--radius)] font-mono text-sm mb-4 resize-none"
+            placeholder={theme === 'voyager' ? "LOG ENTRY: ERROR FOUND ON C-106..." : "Hi Dispatch, I found an error on C-106..."}
+            value={reportInput}
+            onChange={(e) => setReportInput(e.target.value)}
+          />
+          <button 
+             onClick={handleReportSubmit}
+             className="w-full bg-[var(--accent)] text-[var(--bg-primary)] py-3 rounded-[var(--radius)] font-bold hover:brightness-110 flex justify-center items-center gap-2"
+           >
+             <Send size={18} /> {theme === 'voyager' ? 'TRANSMIT' : 'Send Report'}
+           </button>
+        </div>
+      )}
+
+    </div>
+  );
+};
+
+// 4. Journal (Reflection)
+const Journal = ({ theme, onReset }) => {
+  const [mood, setMood] = useState(null);
+
+  return (
+    <div className="max-w-md mx-auto text-center animate-in zoom-in duration-500 pt-10">
+       <div className="w-20 h-20 bg-[var(--success)] text-[var(--bg-primary)] rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-[var(--success)]/50">
+         <CheckCircle size={40} />
+       </div>
+       <h2 className="text-3xl font-display font-bold mb-2">
+         {theme === 'voyager' ? 'SEQUENCE COMPLETE' : 'Module Finished'}
+       </h2>
+       <p className="opacity-70 mb-8">
+         {theme === 'voyager' ? 'Data stream synchronized. How was the signal integrity?' : 'Good job. How did you feel about that task?'}
+       </p>
+       
+       <div className="grid grid-cols-2 gap-4 mb-8">
+         <button onClick={() => setMood('easy')} className={`p-4 border border-[var(--border)] rounded-[var(--radius)] hover:border-[var(--accent)] transition-all ${mood === 'easy' ? 'bg-[var(--accent)] text-[var(--bg-primary)]' : 'bg-[var(--bg-secondary)]'}`}>
+           <span className="block text-xl mb-1">⚡</span>
+           <span className="text-sm font-bold">Too Easy</span>
+         </button>
+         <button onClick={() => setMood('hard')} className={`p-4 border border-[var(--border)] rounded-[var(--radius)] hover:border-[var(--accent)] transition-all ${mood === 'hard' ? 'bg-[var(--accent)] text-[var(--bg-primary)]' : 'bg-[var(--bg-secondary)]'}`}>
+           <span className="block text-xl mb-1">🧠</span>
+           <span className="text-sm font-bold">Challenging</span>
+         </button>
+       </div>
+
+       <button 
+         onClick={onReset}
+         className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] flex items-center justify-center gap-2 mx-auto text-sm uppercase tracking-widest"
+       >
+         <RefreshCw size={14} /> Return to Sector Map
+       </button>
+    </div>
+  );
+};
+
+
+// --- MAIN APP SHELL ---
+
+const App = () => {
+  const [theme, setTheme] = useState('voyager');
+  const [view, setView] = useState('dashboard'); // 'dashboard', 'mission', 'journal'
+  const [missionStep, setMissionStep] = useState(1); // 1, 2, 3
+  const [xp, setXp] = useState(1240);
+  const [streak, setStreak] = useState(4);
+
+  const toggleTheme = () => setTheme(prev => prev === 'voyager' ? 'professional' : 'voyager');
+
+  const startMission = () => {
+    setView('mission');
+    setMissionStep(1);
+  };
+
+  const finishMission = () => {
+    setView('journal');
+  };
+
+  const reset = () => {
+    setView('dashboard');
+  };
+
+  // Watch for mission completion from the component
+  useEffect(() => {
+    if (missionStep === 'complete') {
+      finishMission();
+    }
+  }, [missionStep]);
+
+  return (
+    <div className={`min-h-screen p-4 md:p-8 transition-colors duration-500 relative overflow-hidden ${theme === 'voyager' ? 'scanlines' : ''}`} data-theme={theme}>
+      <style>{cssStyles}</style>
+      
+      {/* Background Visualization (Abstract) */}
+      <div className="absolute inset-0 pointer-events-none z-0 opacity-20">
+         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[var(--accent)] blur-[150px] rounded-full mix-blend-screen" />
+      </div>
+
+      <div className="relative z-10 max-w-5xl mx-auto flex flex-col h-full">
+        
+        {/* HEADER */}
+        <header className="flex justify-between items-center mb-10">
+          <div className="flex items-center gap-3">
+             <div className="p-2 border border-[var(--border)] rounded bg-[var(--glass)]">
+               <Layout size={20} className="text-[var(--accent)]" />
+             </div>
+             <div>
+               <h1 className="font-display font-bold text-lg leading-tight tracking-wider">ASPECT</h1>
+               <div className="text-[10px] opacity-60 uppercase tracking-[0.2em]">{theme === 'voyager' ? 'OS v9.1' : 'Learning Portal'}</div>
+             </div>
+          </div>
+
+          <button 
+            onClick={toggleTheme}
+            className="flex items-center gap-2 px-4 py-2 border border-[var(--border)] bg-[var(--glass)] rounded-full hover:bg-[var(--bg-tertiary)] transition-all text-xs font-bold uppercase tracking-widest"
+          >
+            {theme === 'voyager' ? <Moon size={14} /> : <Sun size={14} />}
+            <span className="hidden md:inline">{theme === 'voyager' ? 'Disengage Immersive' : 'Engage Immersive'}</span>
+          </button>
+        </header>
+
+        {/* CONTENT AREA */}
+        <main className="flex-grow">
+          <Veil theme={theme} step={view === 'dashboard' ? 'dashboard' : missionStep} />
+          
+          {view === 'dashboard' && (
+            <Dashboard theme={theme} xp={xp} streak={streak} onStart={startMission} />
+          )}
+
+          {view === 'mission' && (
+            <MissionView 
+              theme={theme} 
+              step={missionStep} 
+              setStep={setMissionStep}
+              setXp={setXp}
+            />
+          )}
+
+          {view === 'journal' && (
+             <Journal theme={theme} onReset={reset} />
+          )}
+        </main>
+
+        {/* FOOTER */}
+        <footer className="mt-12 text-center text-xs opacity-40 font-mono">
+           {theme === 'voyager' ? 'SYSTEM STATUS: OPTIMAL // SECURE CONNECTION' : '© 2025 Aspect Learning Systems'}
+        </footer>
+
+      </div>
+    </div>
+  );
+};
+
+export default App;
