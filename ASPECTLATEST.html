@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aspect V29: The Quantum Ascension</title>
+<style>
+    /* --- CSS VARIABLES --- */
+    :root {
+        --bg: #050b14;
+        --panel: rgba(15, 23, 42, 0.95);
+        --text: #a5b4fc;
+        --accent: #6366f1;
+        --glow: 0 0 25px rgba(99, 102, 241, 0.6);
+        
+        --gate-gold: #f59e0b;
+        --gate-core: #fffbeb;
+        --gate-locked: #ef4444;
+        
+        --theme-python: #22c55e;
+        --theme-math: #94a3b8;
+        --theme-sql: #0ea5e9;
+        --theme-lit: #f59e0b;
+        
+        /* Puzzle Colors */
+        --puz-safe: #1e293b;
+        --puz-hover: #334155;
+        --puz-trap: #ef4444;
+        --puz-thief: #a855f7;
+        --puz-coin: #fbbf24;
+        --puz-lockout: #ef4444;
+    }
+
+    body, html { margin: 0; padding: 0; height: 100%; font-family: 'Inter', system-ui, sans-serif; overflow: hidden; transition: background 0.8s cubic-bezier(0.23, 1, 0.32, 1); cursor: default; background: var(--bg); color: var(--text); }
+
+    /* --- THE ASCENSION GATE --- */
+    .gate-wrapper {
+        position: absolute; 
+        top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0);
+        z-index: 500;
+        width: 300px; height: 300px;
+        display: flex; justify-content: center; align-items: center;
+        pointer-events: none; opacity: 0;
+        transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    .gate-wrapper.revealed { transform: translate(-50%, -50%) scale(1); opacity: 1; pointer-events: all; }
+    .gate-wrapper.dormant { transform: translate(-50%, -50%) scale(0); opacity: 0; pointer-events: none; }
+
+    .gate-triangle {
+        position: absolute; width: 200px; height: 200px;
+        background: linear-gradient(180deg, rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0));
+        border-top: 2px solid var(--gate-gold); clip-path: polygon(0 0, 100% 0, 50% 100%);
+        animation: floatGate 6s ease-in-out infinite; filter: drop-shadow(0 0 10px var(--gate-gold));
+        transition: all 0.5s ease;
+    }
+    .gate-core {
+        position: absolute; width: 80px; height: 80px;
+        background: radial-gradient(circle, var(--gate-core) 0%, var(--gate-gold) 60%, transparent 100%);
+        border-radius: 50%; box-shadow: 0 0 50px var(--gate-gold), 0 0 100px var(--gate-gold);
+        cursor: pointer; animation: pulseCore 3s infinite ease-in-out;
+        display: flex; justify-content: center; align-items: center; font-size: 30px; color: #451a03;
+        transition: all 0.5s ease;
+    }
+    .gate-core:hover { transform: scale(1.2); filter: brightness(1.2); }
+    .gate-ring { position: absolute; width: 140px; height: 140px; border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 50%; animation: spin 10s linear infinite; }
+    .gate-ring-2 { position: absolute; width: 180px; height: 180px; border: 1px dashed rgba(245, 158, 11, 0.2); border-radius: 50%; animation: spin 20s linear infinite reverse; }
+    .gate-label { 
+        position: absolute; top: -40px; color: var(--gate-gold); 
+        font-weight: bold; letter-spacing: 4px; font-size: 14px; 
+        text-shadow: 0 0 20px var(--gate-gold); opacity: 0.8; cursor: help;
+        user-select: none;
+    }
+
+    @keyframes floatGate { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    @keyframes pulseCore { 0% { box-shadow: 0 0 40px var(--gate-gold); } 50% { box-shadow: 0 0 80px var(--gate-gold), 0 0 20px #fff; } 100% { box-shadow: 0 0 40px var(--gate-gold); } }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    /* --- REALITY SWITCH --- */
+    .reality-switch {
+        position: absolute; top: 20px; left: 20px; z-index: 600; width: 40px; height: 40px; border-radius: 50%;
+        border: 1px solid var(--accent); cursor: pointer; display: flex; justify-content: center; align-items: center;
+        background: rgba(0,0,0,0.5); color: var(--accent); transition: all 0.3s;
+    }
+    .reality-switch:hover { background: var(--accent); color: white; box-shadow: 0 0 15px var(--accent); }
+
+    /* --- LAYERS --- */
+    #veil-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; opacity: 0; transition: opacity 0.5s ease; }
+    body.mode-voyager #veil-canvas { opacity: 1; }
+    .view-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transition: opacity 0.8s ease, transform 0.8s ease, filter 0.8s ease; opacity: 0; pointer-events: none; transform: scale(0.9); filter: blur(10px); display: flex; justify-content: center; align-items: center; }
+    body.mode-voyager { background: radial-gradient(circle at 50% 50%, #1e1b4b 0%, #020617 100%); }
+    body.mode-voyager .view-voyager { opacity: 1; pointer-events: all; transform: scale(1); filter: blur(0); }
+    body.mode-pro { background: var(--p-bg); }
+    body.mode-pro .view-pro { opacity: 1; pointer-events: all; transform: scale(1); filter: blur(0); }
+
+    /* MAP elements */
+    .constellation { position: relative; width: 600px; height: 600px; }
+    .star-node { position: absolute; width: 60px; height: 60px; background: #0f172a; border: 2px solid var(--accent); border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-weight: bold; cursor: pointer; box-shadow: 0 0 15px var(--accent); transition: all 0.3s; z-index: 2; }
+    .star-node:hover { transform: scale(1.2); z-index: 10; }
+    .star-node.mastered { background: #fff; border-color: #fff; color: var(--accent); animation: stable-glow 4s infinite; }
+    .star-node.locked { border-color: #334155; box-shadow: none; opacity: 0.5; filter: grayscale(1); background: #020617; pointer-events: none; }
+    .ghost-orb { position: absolute; width: 10px; height: 10px; background: white; border-radius: 50%; opacity: 0.6; box-shadow: 0 0 10px white; pointer-events: none; animation: orbit 4s linear infinite; }
+    @keyframes orbit { from { transform: rotate(0deg) translateX(40px) rotate(0deg); } to { transform: rotate(360deg) translateX(40px) rotate(-360deg); } }
+    @keyframes stable-glow { 0% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.3); } 50% { box-shadow: 0 0 40px rgba(255, 255, 255, 0.6); } 100% { box-shadow: 0 0 20px rgba(255, 255, 255, 0.3); } }
+    
+    .dashboard-container { width: 800px; background: white; padding: 40px; border-radius: 16px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-top: 50px; }
+    .skill-row { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid #f1f5f9; cursor: pointer; transition: background 0.2s; }
+    .skill-row:hover { background: #f8fafc; }
+    .status-badge { padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; background: #f1f5f9; color: #64748b; }
+    .status-badge.mastered { background: #d1fae5; color: #065f46; }
+
+    /* WORKSPACE */
+    .workspace-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #020617; z-index: 300; display: grid; grid-template-columns: 280px 1fr; transform: translateY(100%); transition: transform 0.5s cubic-bezier(0.86, 0, 0.07, 1); }
+    .workspace-layer.active { transform: translateY(0); }
+    .ws-sidebar { background: #0f172a; color: var(--text); padding: 20px; border-right: 1px solid #334155; display: flex; flex-direction: column; gap: 20px; }
+    .mastery-container { position: relative; width: 120px; height: 120px; margin: 0 auto; display: flex; justify-content: center; align-items: center; }
+    .mastery-ring { transform: rotate(-90deg); width: 100%; height: 100%; }
+    .mastery-bg { fill: none; stroke: rgba(255,255,255,0.1); stroke-width: 8; }
+    .mastery-progress { fill: none; stroke: var(--accent); stroke-width: 8; stroke-dasharray: 339; stroke-dashoffset: 339; transition: stroke-dashoffset 1s ease; stroke-linecap: round; filter: drop-shadow(0 0 5px var(--accent)); }
+    .mastery-icon { position: absolute; font-size: 40px; animation: float 3s infinite ease-in-out; }
+    .region-label { text-align: center; font-size: 14px; font-weight: bold; color: white; letter-spacing: 1px; margin-top: -10px; }
+    .veil-status { display: flex; align-items: center; gap: 15px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 12px; border: 1px solid #334155; }
+    .veil-avatar { width: 40px; height: 40px; border-radius: 50%; background: #0f172a; border: 2px solid var(--accent); display: flex; justify-content: center; align-items: center; font-size: 20px; box-shadow: 0 0 10px var(--accent); }
+    .veil-info div:first-child { font-size: 10px; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px; }
+    .veil-info div:last-child { font-size: 14px; color: white; font-weight: bold; }
+    .inventory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .inv-slot { aspect-ratio: 1; background: rgba(0,0,0,0.3); border: 1px solid #334155; border-radius: 6px; display: flex; justify-content: center; align-items: center; font-size: 18px; transition: all 0.2s; position: relative; cursor: help; }
+    .inv-slot:hover { border-color: var(--accent); background: rgba(255,255,255,0.05); }
+    .inv-slot.empty { opacity: 0.3; }
+    .inv-tooltip { position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%); background: #0f172a; border: 1px solid var(--accent); padding: 5px 10px; border-radius: 4px; font-size: 10px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 10; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+    .inv-slot:hover .inv-tooltip { opacity: 1; }
+    .ws-main { background: #020617; padding: 40px; color: var(--text); display: flex; flex-direction: column; align-items: center; position: relative; }
+    .ws-editor { background: rgba(0,0,0,0.5); padding: 20px; border-radius: 8px; font-family: 'Fira Code', monospace; width: 80%; border: 1px solid var(--accent); margin-bottom: 20px; color: #e2e8f0; font-size: 14px; min-height: 120px; outline: none; white-space: pre-wrap; box-shadow: 0 0 20px rgba(0,0,0,0.3); }
+    .ws-console { width: 80%; height: 200px; background: rgba(0,0,0,0.8); border-radius: 8px; padding: 20px; font-family: monospace; font-size: 14px; overflow-y: auto; border: 1px solid #334155; display: flex; flex-direction: column; justify-content: flex-end; }
+    .console-input { background: transparent; border: none; color: white; width: 100%; font-family: inherit; outline: none; }
+    .veil-voice { color: var(--text); font-style: italic; border-left: 2px solid var(--accent); padding-left: 10px; margin: 10px 0; }
+    .ws-back-btn { cursor: pointer; opacity: 0.7; margin-bottom: 20px; display: block; font-size: 12px; }
+
+    /* TIMER DISPLAY */
+    .timer-display { 
+        font-family: 'Courier New', monospace; font-size: 20px; font-weight: bold; 
+        text-align: center; padding: 10px; border: 1px solid var(--accent); border-radius: 8px;
+        background: rgba(0,0,0,0.3); color: var(--text); text-shadow: 0 0 10px var(--accent);
+        margin-bottom: 10px;
+    }
+    .timer-label { font-size: 10px; opacity: 0.7; text-transform: uppercase; letter-spacing: 2px; display: block; margin-bottom: 5px; }
+
+    /* API CONFIG */
+    .api-config { position: absolute; top: 20px; right: 20px; z-index: 600; display: flex; align-items: center; gap: 10px; }
+    .api-input { background: rgba(0,0,0,0.5); border: 1px solid var(--accent); color: var(--text); padding: 5px 10px; border-radius: 4px; font-size: 12px; width: 0; padding: 0; border: none; overflow: hidden; transition: all 0.3s ease; opacity: 0; }
+    .api-config:hover .api-input, .api-input:focus { width: 200px; padding: 5px 10px; border: 1px solid var(--accent); opacity: 1; }
+    .config-btn { background: var(--accent); border: none; color: white; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; box-shadow: 0 0 10px var(--accent); }
+
+    /* Modals */
+    .overlay-base { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 200; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: all 0.4s ease; }
+    .overlay-base.open { opacity: 1; pointer-events: all; }
+    .card-base { width: 600px; padding: 40px; border-radius: 20px; position: relative; transform: translateY(50px); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; flex-direction: column; background: var(--panel); border: 1px solid var(--accent); box-shadow: 0 0 50px rgba(0,0,0,0.5); color: white; }
+    .overlay-base.open .card-base { transform: translateY(0); }
+    .mission-btn { padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; background: var(--accent); color: white; box-shadow: 0 0 15px var(--accent); transition: 0.3s; }
+    .action-row { display: flex; gap: 10px; width: 80%; }
+    .secondary-btn { background: transparent; border: 1px solid var(--accent); color: var(--accent); }
+    .secondary-btn:hover { background: rgba(255,255,255,0.1); }
+    .reward-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9); width: 400px; padding: 40px; background: var(--bg); border: 2px solid var(--accent); border-radius: 20px; text-align: center; z-index: 1000; opacity: 0; pointer-events: none; box-shadow: 0 0 100px var(--accent); transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    .reward-modal.active { opacity: 1; pointer-events: all; transform: translate(-50%, -50%) scale(1); }
+
+    /* --- PUZZLE MODAL --- */
+    .puzzle-modal {
+        width: 500px; background: #020617; border: 2px solid var(--gate-gold);
+        box-shadow: 0 0 50px rgba(245, 158, 11, 0.3); padding: 30px;
+        display: flex; flex-direction: column; align-items: center;
+        font-family: 'Courier New', monospace; z-index: 1100;
+        transition: box-shadow 0.5s ease;
+    }
+    .puzzle-modal.urgent { box-shadow: 0 0 50px var(--puz-lockout), inset 0 0 20px var(--puz-lockout); border-color: var(--puz-lockout); }
+    
+    .puz-header { width: 100%; display: flex; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid var(--gate-gold); padding-bottom: 10px; color: var(--gate-gold); cursor: pointer; }
+    .puz-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; margin-bottom: 20px; }
+    .puz-cell { width: 50px; height: 50px; background: var(--puz-safe); border: 1px solid #334155; cursor: pointer; display: flex; justify-content: center; align-items: center; font-weight: bold; font-size: 18px; color: white; transition: all 0.2s; position: relative; overflow: hidden; }
+    .puz-cell:hover { background: var(--puz-hover); border-color: var(--text); }
+    .puz-cell.revealed { background: #0f172a; cursor: default; }
+    .puz-cell.trap { background: var(--puz-trap); }
+    .puz-cell.thief { background: var(--puz-thief); }
+    .puz-cell.coin { background: var(--puz-coin); color: black; box-shadow: 0 0 20px var(--puz-coin); }
+    .puz-cell::after {
+        content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.1), rgba(255,255,255,0));
+        transform: translateY(-100%); animation: scan 2s infinite; pointer-events: none;
+    }
+    @keyframes scan { 100% { transform: translateY(100%); } }
+    .puz-status { height: 20px; font-size: 12px; color: var(--gate-gold); margin-bottom: 10px; }
+    
+    /* Boss Timer Pulse */
+    .puz-timer-urgent { color: #ef4444; text-shadow: 0 0 10px #ef4444; animation: pulseFast 0.5s infinite; }
+    @keyframes pulseFast { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+    /* NEW: LOCKOUT BAR */
+    .lockout-bar-bg { width: 100%; height: 4px; background: #334155; margin-bottom: 15px; }
+    .lockout-bar-fill { height: 100%; background: var(--gate-gold); width: 100%; transition: width 1s linear; }
+    .puzzle-modal.urgent .lockout-bar-fill { background: var(--puz-lockout); box-shadow: 0 0 10px var(--puz-lockout); }
+
+    /* FLASH TRANSITION */
+    #ascension-flash {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: white; z-index: 9999; pointer-events: none; opacity: 0;
+        transition: opacity 2s ease-out;
+    }
+    body.ascended #ascension-flash { animation: flashBang 3s ease-out forwards; }
+    @keyframes flashBang { 0% { opacity: 0; } 10% { opacity: 1; } 100% { opacity: 0; } }
+
+    /* Theme Overrides */
+    .theme-python { --accent: var(--theme-python); --text: #86efac; }
+    .theme-math { --accent: var(--theme-math); --text: #e2e8f0; }
+    .theme-sql { --accent: var(--theme-sql); --text: #7dd3fc; }
+    .theme-lit { --accent: var(--theme-lit); --text: #fcd34d; }
+</style>
+</head>
+<body class="mode-voyager">
+
+    <canvas id="veil-canvas"></canvas>
+    <div id="ascension-flash"></div>
+
+    <!-- REALITY SWITCH -->
+    <div class="reality-switch" title="Toggle Reality" onclick="App.toggleMode()">👁️</div>
+
+    <!-- API CONFIG -->
+    <div class="api-config">
+        <input type="password" id="api-key" class="api-input" placeholder="Paste Gemini API Key Here">
+        <button class="config-btn" title="Neural Link" onclick="document.getElementById('api-key').focus()">⚡</button>
+    </div>
+
+    <!-- THE ASCENSION GATE -->
+    <div class="gate-wrapper" id="janus-gate" onclick="App.handleGateClick()">
+        <!-- ARCHITECT'S BACKDOOR: Click Label 3x -->
+        <div class="gate-label" id="gate-label" onclick="App.handleDevClick(event)">ASCENSION PROTOCOL READY</div>
+        <div class="gate-triangle"></div>
+        <div class="gate-ring"></div>
+        <div class="gate-ring-2"></div>
+        <div class="gate-core">⛩️</div>
+    </div>
+
+    <!-- VIEWS -->
+    <div class="view-layer view-voyager">
+        <div class="constellation" id="galaxy-root"></div>
+        <div id="tier-label" style="position: absolute; bottom: 30px; opacity: 0.5; font-size: 12px; color:white;">TIER 1: THE FOUNDATION</div>
+    </div>
+    <div class="view-layer view-pro">
+        <div class="dashboard-container">
+            <h1 style="margin:0; color:#0f172a;">Competency Matrix</h1>
+            <div id="pro-list" style="margin-top:20px;"></div>
+        </div>
+    </div>
+
+    <!-- PUZZLE OVERLAY (BOSS) -->
+    <div class="overlay-base" id="puzzle-overlay">
+        <div class="card-base puzzle-modal" id="puzzle-card">
+            <!-- FORCE WIN: Click Header 3x -->
+            <div class="puz-header" onclick="App.handleWinClick(event)">
+                <span>TRIAL OF JANUS</span>
+                <span id="puz-timer">05:00</span>
+            </div>
+            <div class="lockout-bar-bg"><div class="lockout-bar-fill" id="lockout-bar"></div></div>
+            <div class="puz-status" id="puz-message">Triangulate the Coin. Avoid the Glitch.</div>
+            <div class="puz-grid" id="puz-grid"></div>
+            <button class="mission-btn" onclick="BossPuzzle.abort()" style="background:transparent; border:1px solid #ef4444; color:#ef4444;">ABORT SEQUENCE</button>
+        </div>
+    </div>
+
+    <!-- WORKSPACE & MODALS -->
+    <div class="workspace-layer" id="workspace">
+        <div class="ws-sidebar">
+            <div class="ws-back-btn" onclick="UI.closeWorkspace()">← EXIT SIMULATION</div>
+            <div class="timer-display"><span class="timer-label" id="timer-label">TEMPORAL DRIFT</span><span id="mission-timer">00:00</span></div>
+            <div class="mastery-container"><svg class="mastery-ring" viewBox="0 0 120 120"><circle class="mastery-bg" cx="60" cy="60" r="54" /><circle class="mastery-progress" id="ring-progress" cx="60" cy="60" r="54" /></svg><div class="mastery-icon" id="region-icon">🐍</div></div>
+            <div class="region-label" id="sheet-region">The Serpent's Garden</div>
+            <div class="veil-status"><div class="veil-avatar" id="veil-avatar">👁️</div><div class="veil-info"><div>Veil Connection</div><div id="veil-mood">Observing...</div></div></div>
+            <div class="sheet-section" style="border:none;"><div class="sheet-label">Artifacts</div><div class="inventory-grid" id="inv-grid"></div></div>
+        </div>
+        <div class="ws-main">
+            <div id="ws-context" style="margin-bottom:20px; font-weight:bold;">// UPLINK ESTABLISHED</div>
+            <div class="ws-editor" id="ws-editor" contenteditable="true" spellcheck="false"></div>
+            <div class="action-row"><button class="mission-btn" style="flex:1" onclick="App.runCode()">EXECUTE RUNES ▶</button><button class="mission-btn secondary-btn" style="flex:1" onclick="App.decipherCode()">✨ DECIPHER</button></div>
+            <div class="ws-console" id="ws-console"><div class="console-log" id="console-log"><div style="opacity:0.5; margin-bottom:10px;">> System Ready. Use 'Decipher' to analyze code or type below to chat.</div></div><div class="console-input-line"><span class="console-prompt">></span><input type="text" class="console-input" id="console-input" placeholder="Query the machine..." autocomplete="off"></div></div>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <div class="overlay-base" id="mission-modal">
+        <div class="card-base">
+            <div class="close-btn" onclick="UI.closeMission()" style="position:absolute; top:20px; right:20px; cursor:pointer;">×</div>
+            <div id="m-title" style="font-size:24px; font-weight:bold; margin-bottom:10px;">Title</div>
+            <div id="m-desc" style="opacity:0.8; margin-bottom:20px;">Desc</div>
+            <button class="mission-btn" onclick="UI.startWorkspace()">Initialize</button>
+        </div>
+    </div>
+    <div class="reward-modal" id="reward-modal">
+        <div class="reward-icon" id="reward-icon">🗝️</div>
+        <h2 id="reward-title" style="margin:0; margin-bottom:10px; color:var(--accent);">ARTIFACT FOUND</h2>
+        <p id="reward-desc" style="opacity:0.8; font-size:14px; margin-bottom:20px;">You have recovered a fragment of the source code.</p>
+        <div id="reward-time" style="font-family:monospace; color:var(--text); opacity:0.7; margin-bottom:20px; font-size:12px;"></div>
+        <button class="mission-btn" onclick="UI.closeReward()">INTEGRATE</button>
+    </div>
+
+<script>
+    /* ASPECT V29: The Quantum Ascension */
+
+    const SaveSystem = {
+        saveKey: 'aspect_user_save_v1',
+        defaultSave: { 
+            identity: { name: 'Traveler-' + Math.floor(Math.random()*9999) }, 
+            modules: { unlocked: [1], mastered: [] }, 
+            stains: [],
+            gateLockout: 0,
+            tier: 1
+        },
+        load: function() { const data = localStorage.getItem(this.saveKey); return data ? JSON.parse(data) : this.defaultSave; },
+        save: function(data) { localStorage.setItem(this.saveKey, JSON.stringify(data)); }
+    };
+
+    const CurriculumData = {
+        tier1: [
+            { id: 1, domain: 'python', voyTitle: "The Serpent's Garden", proTitle: "Python Syntax", voyDesc: "The vines of logic are overgrown.", requiredKeywords: ['def', 'return'], rewardTitle: "SERPENT KEY", rewardIcon: "🐍", defaultCode: "# Define 'uplink' to decode\n\n" },
+            { id: 2, domain: 'math', voyTitle: "Obsidian Observatory", proTitle: "Data Structures", voyDesc: "The stars align in arrays.", requiredKeywords: ['list', 'sort'], rewardTitle: "OBSIDIAN LENS", rewardIcon: "🧿", defaultCode: "# Create a list of stars\n" },
+            { id: 3, domain: 'sql', voyTitle: "The Catacombs", proTitle: "SQL Queries", voyDesc: "The dead speak in queries.", requiredKeywords: ['select'], rewardTitle: "SKULL KEY", rewardIcon: "💀", defaultCode: "-- Select memories\n" },
+            { id: 4, domain: 'lit', voyTitle: "The Inkwell", proTitle: "Documentation", voyDesc: "Write the history.", requiredKeywords: ['print'], rewardTitle: "QUILL OF TRUTH", rewardIcon: "🪶", defaultCode: "// Log journey\n" }
+        ],
+        tier2: [
+            { id: 1, domain: 'python', voyTitle: "The Void State", proTitle: "Async Patterns", voyDesc: "Time is not a line. Do not block the flow.", requiredKeywords: ['async', 'await'], rewardTitle: "VOID SHARD", rewardIcon: "🌌", defaultCode: "async def connect():\n    await signal()" },
+            { id: 2, domain: 'math', voyTitle: "The Soul Bond", proTitle: "Entanglement", voyDesc: "To pull one string moves the web.", requiredKeywords: ['node', 'next'], rewardTitle: "LINK CHAIN", rewardIcon: "🔗", defaultCode: "class Node:\n    self.next = None" },
+            { id: 3, domain: 'sql', voyTitle: "The Reality Shift", proTitle: "WebSockets", voyDesc: "The river flows both ways.", requiredKeywords: ['socket', 'on'], rewardTitle: "FLUX CAPACITOR", rewardIcon: "⚡", defaultCode: "socket.on('message')" },
+            { id: 4, domain: 'lit', voyTitle: "The Multiverse", proTitle: "Microservices", voyDesc: "One mind cannot hold it all.", requiredKeywords: ['service'], rewardTitle: "NEXUS CORE", rewardIcon: "💠", defaultCode: "service.deploy()" }
+        ]
+    };
+
+    const State = { mode: 'voyager', user: SaveSystem.load(), activeMission: null, missionStartTime: 0, missionTimer: null, activeNodes: [] };
+
+    // --- BOSS PUZZLE MODULE ---
+    const BossPuzzle = {
+        gridSize: 6, coinPos: {x:0, y:0}, traps: [], thieves: [], timer: null, timeLeft: 300,
+        init: function() {
+            this.generateUniquePositions(); this.timeLeft = 300; this.renderGrid(); this.startTimer();
+            document.getElementById('janus-gate').classList.add('dormant'); document.getElementById('puzzle-overlay').classList.add('open');
+            document.getElementById('puzzle-card').classList.remove('urgent');
+        },
+        generateUniquePositions: function() {
+            let positions = [];
+            while(positions.length < 1 + 3 + 2) { 
+                let p = this.randPos();
+                if(!positions.some(pos => pos.x === p.x && pos.y === p.y)) positions.push(p);
+            }
+            this.coinPos = positions[0]; this.traps = positions.slice(1, 4); this.thieves = positions.slice(4);
+        },
+        randPos: function() { return { x: Math.floor(Math.random() * this.gridSize), y: Math.floor(Math.random() * this.gridSize) }; },
+        isPos: function(p1, p2) { return p1.x === p2.x && p1.y === p2.y; },
+        getDistance: function(x, y) { return Math.abs(x - this.coinPos.x) + Math.abs(y - this.coinPos.y); },
+        renderGrid: function() {
+            const gridEl = document.getElementById('puz-grid'); gridEl.innerHTML = '';
+            for(let y=0; y<this.gridSize; y++) {
+                for(let x=0; x<this.gridSize; x++) {
+                    const cell = document.createElement('div'); cell.className = 'puz-cell';
+                    cell.onclick = () => this.handleCellClick(x, y, cell); gridEl.appendChild(cell);
+                }
+            }
+        },
+        handleCellClick: function(x, y, cell) {
+            if (cell.classList.contains('revealed')) return;
+            cell.classList.add('revealed');
+            const p = {x, y};
+            if (this.isPos(p, this.coinPos)) { cell.classList.add('coin'); cell.innerHTML = '🪙'; this.endGame(true); return; }
+            if (this.traps.some(t => this.isPos(t, p))) { cell.classList.add('trap'); cell.innerHTML = '☠️'; this.endGame(false, "TRAP TRIGGERED. SYSTEM LOCKED."); return; }
+            if (this.thieves.some(t => this.isPos(t, p))) {
+                cell.classList.add('thief'); cell.innerHTML = '🧛';
+                if (State.user.stains.length > 0) {
+                    const stolen = State.user.stains.pop(); SaveSystem.save(State.user);
+                    document.getElementById('puz-message').innerText = `SIPHON! Lost ${stolen}.`; UI.updateSidebar();
+                } else document.getElementById('puz-message').innerText = "SIPHON HUNGRY.";
+                return;
+            }
+            const dist = this.getDistance(x, y); cell.innerHTML = dist;
+            document.getElementById('puz-message').innerText = `Signal Strength: ${dist} units away.`;
+        },
+        startTimer: function() {
+            this.timer = setInterval(() => {
+                this.timeLeft--;
+                const m = Math.floor(this.timeLeft / 60); const s = this.timeLeft % 60;
+                const timerEl = document.getElementById('puz-timer');
+                timerEl.innerText = `0${m}:${s<10?'0'+s:s}`;
+                const pct = (this.timeLeft / 300) * 100;
+                document.getElementById('lockout-bar').style.width = pct + '%';
+                if (this.timeLeft < 60) { timerEl.classList.add('puz-timer-urgent'); document.getElementById('puzzle-card').classList.add('urgent'); }
+                if (this.timeLeft <= 0) this.endGame(false, "GATE SEALED. PROTOCOL FAILED.");
+            }, 1000);
+        },
+        endGame: function(win, msg) {
+            clearInterval(this.timer);
+            document.getElementById('puz-timer').classList.remove('puz-timer-urgent');
+            if (win) {
+                document.getElementById('puz-message').innerText = "COIN ACQUIRED. ASCENSION GRANTED.";
+                // ASCENSION SEQUENCE
+                setTimeout(() => { 
+                    document.body.classList.add('ascended'); // Trigger Flash
+                    setTimeout(() => {
+                        document.getElementById('puzzle-overlay').classList.remove('open'); 
+                        document.getElementById('janus-gate').classList.remove('dormant'); 
+                        App.ascendTier(); // Load Tier 2
+                        document.body.classList.remove('ascended');
+                    }, 1000);
+                }, 1000);
+            } else {
+                document.getElementById('puz-message').innerText = msg || "FAILURE.";
+                State.user.gateLockout = Date.now() + 5 * 60 * 1000; SaveSystem.save(State.user);
+                setTimeout(() => { document.getElementById('puzzle-overlay').classList.remove('open'); document.getElementById('janus-gate').classList.remove('dormant'); App.checkGate(); }, 2000);
+            }
+        },
+        abort: function() {
+            clearInterval(this.timer); document.getElementById('puz-timer').classList.remove('puz-timer-urgent');
+            document.getElementById('puzzle-overlay').classList.remove('open'); document.getElementById('janus-gate').classList.remove('dormant');
+        }
+    };
+
+    const AI = {
+        getKey: function() { return document.getElementById('api-key').value; },
+        call: async function(prompt, type = 'chat') {
+            const key = this.getKey();
+            if (!key) return "Veil: [CONNECTION ERROR] Neural Link disconnected.";
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`;
+            const context = State.mode === 'voyager' ? "You are Veil." : "You are a Senior Dev.";
+            let finalPrompt = type === 'chat' ? `${context} User: ${prompt}` : `${context} Analyze code: ${prompt}`;
+            const payload = { contents: [{ parts: [{ text: finalPrompt }] }] };
+            try {
+                const response = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                const data = await response.json();
+                return data.candidates?.[0]?.content?.parts?.[0]?.text || "Signal lost.";
+            } catch (e) { return "Veil: [ERROR] Silent."; }
+        }
+    };
+
+    const App = {
+        devClicks: 0, winClicks: 0,
+        init: function() { 
+            State.activeNodes = State.user.tier === 2 ? CurriculumData.tier2 : CurriculumData.tier1;
+            UI.renderMap(); VFX.init(); App.checkGate(); setInterval(App.updateGateStatus, 1000); 
+            // Set initial label
+            if(State.user.tier === 2) document.getElementById('tier-label').innerText = "TIER 2: QUANTUM ASCENSION";
+        },
+        ascendTier: function() {
+            State.user.tier = 2;
+            State.user.modules.mastered = []; // Reset mastery for new tier (optional choice)
+            State.user.modules.unlocked = [1]; // Unlock first node of T2
+            State.user.stains.push("Gate Key: Tier 1");
+            SaveSystem.save(State.user);
+            State.activeNodes = CurriculumData.tier2;
+            document.getElementById('tier-label').innerText = "TIER 2: QUANTUM ASCENSION";
+            UI.renderMap();
+            // Hide Gate until T2 mastered
+            document.getElementById('janus-gate').classList.remove('revealed');
+        },
+        toggleMode: function() {
+            State.mode = State.mode === 'voyager' ? 'pro' : 'voyager';
+            document.body.className = `mode-${State.mode}`;
+            if (State.mode === 'pro') document.documentElement.style = ''; 
+            else if (State.activeMission) App.applyTheme(State.activeMission.domain);
+        },
+        openMission: function(id) {
+            if (!State.user.modules.unlocked.includes(id)) return;
+            const node = State.activeNodes.find(n => n.id === id);
+            State.activeMission = node;
+            App.applyTheme(node.domain);
+            UI.startWorkspace();
+        },
+        applyTheme: function(domain) {
+            if (State.mode === 'pro') return;
+            const root = document.documentElement;
+            root.style.setProperty('--accent', 'var(--theme-' + domain + ')');
+        },
+        runCode: function() {
+            const userCode = document.getElementById('ws-editor').innerText.toLowerCase();
+            const log = document.getElementById('console-log');
+            const missingKeys = State.activeMission.requiredKeywords.filter(k => !userCode.includes(k));
+            if (missingKeys.length > 0) {
+                log.innerHTML += `<div class='veil-voice' style='color:#ef4444'>System: Missing keywords [${missingKeys.join(', ')}].</div>`;
+                return;
+            }
+            
+            clearInterval(State.missionTimer);
+            const elapsed = Math.floor((Date.now() - State.missionStartTime) / 1000);
+            const mins = Math.floor(elapsed / 60);
+            const secs = elapsed % 60;
+            const timeString = `${mins}m ${secs}s`;
+
+            if (!State.user.modules.mastered.includes(State.activeMission.id)) {
+                State.user.modules.mastered.push(State.activeMission.id);
+                const nextId = State.activeMission.id + 1;
+                if (nextId <= 4 && !State.user.modules.unlocked.includes(nextId)) State.user.modules.unlocked.push(nextId);
+                const lootName = State.activeMission.rewardIcon + " " + State.activeMission.rewardTitle;
+                if (!State.user.stains.includes(lootName)) State.user.stains.push(lootName);
+                SaveSystem.save(State.user);
+                setTimeout(() => UI.showReward(State.activeMission, timeString), 1000);
+            }
+            log.innerHTML += `<div class='veil-voice'>System: Module Verified.</div>`;
+            log.scrollTop = log.scrollHeight;
+            UI.renderMap();
+            UI.updateSidebar();
+            App.checkGate();
+        },
+        decipherCode: async function() {
+            const code = document.getElementById('ws-editor').innerText;
+            const log = document.getElementById('console-log');
+            log.innerHTML += `<div style='opacity:0.5'>...Analyzing...</div>`;
+            const response = await AI.call(code, 'decipher');
+            log.lastChild.remove();
+            log.innerHTML += `<div class='veil-voice'>${response}</div>`;
+            log.scrollTop = log.scrollHeight;
+        },
+        checkGate: function() {
+            const mastered = State.user.modules.mastered.length;
+            // Only reveal gate if we are at the end of the tier and not yet ascended beyond it
+            // For demo, we assume 4 nodes per tier
+            if (mastered >= 4) document.getElementById('janus-gate').classList.add('revealed');
+            App.updateGateStatus();
+        },
+        updateGateStatus: function() {
+            const now = Date.now();
+            const gate = document.getElementById('janus-gate');
+            const label = document.getElementById('gate-label');
+            
+            if (State.user.gateLockout && now < State.user.gateLockout) {
+                gate.classList.add('locked');
+                const diff = Math.ceil((State.user.gateLockout - now) / 1000);
+                const m = Math.floor(diff / 60);
+                const s = diff % 60;
+                label.innerText = `SYSTEM LOCKOUT: ${m}:${s<10?'0'+s:s}`;
+            } else {
+                gate.classList.remove('locked');
+                if (gate.classList.contains('revealed')) label.innerText = "ASCENSION PROTOCOL READY";
+            }
+        },
+        handleGateClick: function() {
+            const now = Date.now();
+            if (State.user.gateLockout && now < State.user.gateLockout) { alert("GATE LOCKED. COOLDOWN ACTIVE."); return; }
+            BossPuzzle.init();
+        },
+        handleDevClick: function(e) {
+            e.stopPropagation(); App.devClicks++;
+            if (App.devClicks >= 3) {
+                State.user.gateLockout = 0; SaveSystem.save(State.user);
+                App.devClicks = 0; alert("ARCHITECT OVERRIDE: LOCKOUT CLEARED.");
+                App.updateGateStatus();
+            }
+        },
+        handleWinClick: function(e) {
+            e.stopPropagation(); App.winClicks++;
+            if (App.winClicks >= 3) {
+                BossPuzzle.endGame(true); App.winClicks = 0;
+            }
+        }
+    };
+
+    const UI = {
+        renderMap: function() {
+            const galaxy = document.getElementById('galaxy-root');
+            const list = document.getElementById('pro-list');
+            galaxy.innerHTML = ''; list.innerHTML = '';
+            State.activeNodes.forEach((node, index) => {
+                const isUnlocked = State.user.modules.unlocked.includes(node.id);
+                const isMastered = State.user.modules.mastered.includes(node.id);
+                if (index > 0) {
+                    const prev = State.activeNodes[index-1];
+                    const line = document.createElement('div');
+                    line.style.cssText = `position:absolute; width:2px; background:var(--accent); opacity:${isUnlocked?0.3:0.1}; height:100px; left:${300}px; top:${(prev.y || 100)+30}px; transform-origin:top left; transform:rotate(${node.x<300 ? 20 : -20}deg);`;
+                }
+                const star = document.createElement('div');
+                star.className = `star-node ${isMastered ? 'mastered' : (isUnlocked ? '' : 'locked')}`;
+                const pos = [{x:300,y:100}, {x:150,y:300}, {x:450,y:300}, {x:300,y:500}][index];
+                star.style.left = pos.x + 'px'; star.style.top = pos.y + 'px';
+                star.innerHTML = isMastered ? '★' : (isUnlocked ? '●' : '✖');
+                star.onclick = () => App.openMission(node.id);
+                if (isUnlocked && node.ghostCount > 0) { const orb = document.createElement('div'); orb.className='ghost-orb'; star.appendChild(orb); }
+                galaxy.appendChild(star);
+                const row = document.createElement('div');
+                row.className = 'skill-row';
+                row.innerHTML = `<div><b>${node.proTitle}</b></div><div class="status-badge ${isMastered?'mastered':''}">${isMastered?'Mastered':(isUnlocked?'Active':'Locked')}</div>`;
+                row.onclick = () => App.openMission(node.id);
+                list.appendChild(row);
+            });
+        },
+        startWorkspace: function() {
+            document.getElementById('workspace').classList.add('active');
+            UI.updateSidebar();
+            document.getElementById('ws-editor').innerText = State.activeMission.defaultCode;
+            document.getElementById('console-log').innerHTML = "<div style='opacity:0.5'>> Terminal Ready.</div>";
+            State.missionStartTime = Date.now();
+            clearInterval(State.missionTimer);
+            State.missionTimer = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - State.missionStartTime) / 1000);
+                const mins = Math.floor(elapsed / 60); const secs = elapsed % 60;
+                document.getElementById('mission-timer').innerText = `${mins < 10 ? '0'+mins : mins}:${secs < 10 ? '0'+secs : secs}`;
+            }, 1000);
+        },
+        showReward: function(node, timeStr) {
+            document.getElementById('reward-icon').innerText = State.mode === 'voyager' ? node.rewardIcon : "📜";
+            document.getElementById('reward-title').innerText = State.mode === 'voyager' ? "ARTIFACT ACQUIRED" : "CERTIFICATION COMPLETE";
+            document.getElementById('reward-desc').innerText = State.mode === 'voyager' ? `You have obtained: ${node.rewardTitle}` : `Competency Verified: ${node.proTitle}`;
+            document.getElementById('reward-time').innerText = `Synchronization Time: ${timeStr}`;
+            document.getElementById('reward-modal').classList.add('active');
+        },
+        closeReward: function() { document.getElementById('reward-modal').classList.remove('active'); },
+        updateSidebar: function() {
+            const domain = State.activeMission.domain;
+            document.getElementById('sheet-region').innerText = State.activeMission.voyTitle;
+            document.getElementById('region-icon').innerText = State.activeMission.rewardIcon;
+            const domainNodes = State.activeNodes.filter(n => n.domain === domain);
+            const masteredCount = domainNodes.filter(n => State.user.modules.mastered.includes(n.id)).length;
+            const pct = (masteredCount / (domainNodes.length || 1)) * 339; 
+            document.getElementById('ring-progress').style.strokeDashoffset = 339 - pct;
+            const avatars = { python: '🐍', math: '🧿', sql: '💀', lit: '🪶' };
+            document.getElementById('veil-avatar').innerText = avatars[domain];
+            document.getElementById('veil-mood').innerText = masteredCount > 0 ? "Impressed" : "Waiting...";
+            const grid = document.getElementById('inv-grid');
+            grid.innerHTML = '';
+            for(let i=0; i<12; i++) {
+                const item = State.user.stains[i];
+                const slot = document.createElement('div');
+                slot.className = 'inv-slot' + (item ? '' : ' empty');
+                if(item) {
+                    const [icon, ...name] = item.split(' ');
+                    slot.innerText = icon;
+                    const tip = document.createElement('div');
+                    tip.className = 'inv-tooltip';
+                    tip.innerText = name.join(' ');
+                    slot.appendChild(tip);
+                }
+                grid.appendChild(slot);
+            }
+        },
+        closeMission: function() { document.getElementById('mission-modal').classList.remove('open'); },
+        closeWorkspace: function() {
+            clearInterval(State.missionTimer);
+            document.getElementById('workspace').classList.remove('active');
+            document.documentElement.style = '';
+        }
+    };
+
+    const VFX = {
+        init: function() {
+            const c = document.getElementById('veil-canvas');
+            const ctx = c.getContext('2d');
+            let pts = [];
+            const resize = () => { c.width=window.innerWidth; c.height=window.innerHeight; };
+            window.addEventListener('resize',resize); resize();
+            window.addEventListener('mousemove', e => { for(let i=0;i<2;i++) pts.push({x:e.clientX,y:e.clientY,vx:(Math.random()-.5),vy:(Math.random()-.5),life:100}); });
+            function anim() {
+                ctx.clearRect(0,0,c.width,c.height);
+                if(State.mode==='voyager'){
+                    ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--accent');
+                    pts.forEach((p,i) => { p.x+=p.vx; p.y+=p.vy; p.life-=2; ctx.globalAlpha=p.life/100; ctx.beginPath(); ctx.arc(p.x,p.y,Math.random()*2,0,7); ctx.fill(); if(p.life<=0)pts.splice(i,1); });
+                }
+                requestAnimationFrame(anim);
+            }
+            anim();
+        }
+    };
+
+    document.getElementById('console-input').addEventListener('keypress', App.handleConsoleInput);
+    App.init();
+
+</script>
+</body>
+</html>
