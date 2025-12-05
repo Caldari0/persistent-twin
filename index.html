@@ -134,28 +134,43 @@
                 </p>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:items-start">
                 
                 <!-- LEFT: Controls & Context -->
                 <div class="lg:col-span-4 space-y-6">
-                    <div class="bg-white p-6 rounded-xl border border-border shadow-sm">
-                        <h3 class="font-bold text-primary mb-4">Select User Context</h3>
-                        
-                        <div class="space-y-3">
-                            <button onclick="updateTwin('veteran')" id="btn-veteran" class="w-full text-left p-4 rounded-lg border-2 border-accent bg-highlight transition-all relative">
-                                <div class="font-bold text-primary">Analyst A-317 (Veteran)</div>
-                                <div class="text-sm text-secondary">High performing, consistent streak.</div>
-                                <div class="absolute top-4 right-4 text-accent font-bold text-xl">✓</div>
-                            </button>
-                            
-                            <button onclick="updateTwin('rookie')" id="btn-rookie" class="w-full text-left p-4 rounded-lg border-2 border-transparent hover:border-border bg-gray-50 transition-all">
-                                <div class="font-bold text-primary">Analyst B-002 (Rookie)</div>
-                                <div class="text-sm text-secondary">Struggling with basics, at risk.</div>
-                            </button>
+                    <div class="bg-white p-6 rounded-xl border border-border shadow-sm space-y-6">
+                        <div class="flex items-start justify-between">
+                            <div>
+                                <h3 class="font-bold text-primary">Select User Context</h3>
+                                <p class="text-sm text-secondary">Switch personas to see how the UI responds to different histories.</p>
+                            </div>
+                            <span class="text-[11px] px-2 py-1 rounded-full bg-highlight text-accent font-bold">Live Swap</span>
                         </div>
 
-                        <div class="mt-6 pt-6 border-t border-border">
-                            <h4 class="text-sm font-bold text-secondary uppercase tracking-wider mb-2">Key Data Sources</h4>
+                          <div class="space-y-3">
+                              <button onclick="updateTwin('veteran')" id="btn-veteran" class="w-full text-left p-4 rounded-lg border-2 border-accent bg-highlight transition-all relative">
+                                  <div class="flex items-start justify-between gap-3">
+                                      <div>
+                                          <div class="font-bold text-primary">Analyst A-317 (Veteran)</div>
+                                          <div class="text-sm text-secondary">High performing, consistent streak.</div>
+                                      </div>
+                                      <span class="absolute top-4 right-4 text-accent font-bold text-xl selection-check" aria-hidden="true">✓</span>
+                                  </div>
+                              </button>
+
+                              <button onclick="updateTwin('rookie')" id="btn-rookie" class="w-full text-left p-4 rounded-lg border-2 border-transparent hover:border-border bg-gray-50 transition-all relative">
+                                  <div class="flex items-start justify-between gap-3">
+                                      <div>
+                                          <div class="font-bold text-primary">Analyst B-002 (Rookie)</div>
+                                          <div class="text-sm text-secondary">Struggling with basics, at risk.</div>
+                                      </div>
+                                      <span class="absolute top-4 right-4 text-accent font-bold text-xl selection-check hidden" aria-hidden="true">✓</span>
+                                  </div>
+                              </button>
+                          </div>
+
+                        <div class="pt-4 border-t border-border">
+                            <h4 class="text-xs font-bold text-secondary uppercase tracking-[0.2em] mb-2">Key Data Sources</h4>
                             <ul class="text-sm space-y-2 text-primary">
                                 <li class="flex items-center"><span class="w-2 h-2 rounded-full bg-success mr-2"></span> user_skill_mastery</li>
                                 <li class="flex items-center"><span class="w-2 h-2 rounded-full bg-accent mr-2"></span> activity_logs</li>
@@ -168,34 +183,37 @@
                 <!-- RIGHT: The Twin UI Component -->
                 <div class="lg:col-span-8">
                     <!-- The Middle Window Container -->
-                    <div class="bg-white border border-border rounded-xl shadow-lg overflow-hidden max-w-md mx-auto transform transition-all duration-500" id="twin-container">
+                    <div class="bg-white border border-border rounded-2xl shadow-lg overflow-hidden max-w-2xl w-full mx-auto transform transition-all duration-500" id="twin-container">
                         
                         <!-- Zone 1: Header (Identity Anchor) -->
-                        <div class="bg-slate-50 p-5 border-b border-border">
-                            <div class="text-[10px] text-accent font-bold tracking-[0.2em] uppercase mb-1">Proficiency Twin // Current Mastery</div>
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-xs" id="ui-avatar">A</div>
-                                    <div>
-                                        <div class="text-sm font-bold text-primary" id="ui-user-id">Analyst: A-317</div>
-                                        <div class="text-xs text-secondary" id="ui-role-site">Role: Ops Assistant • Site: North Hub</div>
+                            <div class="bg-slate-50 p-5 border-b border-border">
+                                <div class="text-[10px] text-accent font-bold tracking-[0.2em] uppercase mb-1">Proficiency Twin // Current Mastery</div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-xs" id="ui-avatar">A</div>
+                                        <div>
+                                            <div class="text-sm font-bold text-primary" id="ui-user-id" aria-live="polite">Analyst: A-317</div>
+                                            <div class="text-xs text-secondary" id="ui-role-site" aria-live="polite">Role: Ops Assistant • Site: North Hub</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
                         <!-- Zone 2: Skill Mastery Cards (The Core) -->
-                        <div class="p-5 space-y-4 bg-white min-h-[300px]" id="ui-skill-cards">
+                        <div class="p-5 bg-white grid gap-3 md:grid-cols-2 min-h-[300px]" id="ui-skill-cards">
                             <!-- Cards injected via JS -->
                         </div>
 
                         <!-- Zone 3: Streak & Activity Strip -->
-                        <div class="bg-slate-50 border-y border-border px-5 py-3 flex items-center justify-between text-xs">
+                        <div class="bg-slate-50 border-y border-border px-5 py-3 flex items-center justify-between text-xs" aria-live="polite">
                             <div class="flex items-center gap-2">
                                 <span class="text-xl">🔥</span>
-                                <span class="font-bold text-primary" id="ui-streak">4 days active</span>
+                                <div class="flex flex-col leading-tight">
+                                    <span class="font-bold text-primary" id="ui-streak">4 days active</span>
+                                    <span class="text-secondary" id="ui-missions-week">6 missions this week</span>
+                                </div>
                             </div>
-                            <div class="text-secondary" id="ui-missions-week">6 missions this week</div>
+                            <div class="text-[10px] px-2 py-1 bg-white border border-border rounded-full uppercase tracking-[0.15em] text-secondary">Momentum</div>
                         </div>
 
                         <!-- Zone 4: Engine / Veil Insight -->
@@ -410,23 +428,22 @@
             const data = personas[type];
 
             // 1. Update Controls UI
-            document.getElementById('btn-veteran').className = type === 'veteran' 
-                ? "w-full text-left p-4 rounded-lg border-2 border-accent bg-highlight transition-all relative"
-                : "w-full text-left p-4 rounded-lg border-2 border-transparent hover:border-border bg-gray-50 transition-all";
-            
-            document.getElementById('btn-rookie').className = type === 'rookie'
+            const veteranBtn = document.getElementById('btn-veteran');
+            const rookieBtn = document.getElementById('btn-rookie');
+
+            veteranBtn.className = type === 'veteran'
                 ? "w-full text-left p-4 rounded-lg border-2 border-accent bg-highlight transition-all relative"
                 : "w-full text-left p-4 rounded-lg border-2 border-transparent hover:border-border bg-gray-50 transition-all";
 
-            // Add checkmark logic
-            const check = '<div class="absolute top-4 right-4 text-accent font-bold text-xl">✓</div>';
-            if (type === 'veteran') {
-                document.getElementById('btn-veteran').innerHTML += check;
-                // Remove check from rookie if present (handled by className reset mostly, but innerHTML reset needed)
-                document.getElementById('btn-rookie').innerHTML = document.getElementById('btn-rookie').innerHTML.replace(check, '');
-            } else {
-                document.getElementById('btn-rookie').innerHTML += check;
-                document.getElementById('btn-veteran').innerHTML = document.getElementById('btn-veteran').innerHTML.replace(check, '');
+            rookieBtn.className = type === 'rookie'
+                ? "w-full text-left p-4 rounded-lg border-2 border-accent bg-highlight transition-all relative"
+                : "w-full text-left p-4 rounded-lg border-2 border-transparent hover:border-border bg-gray-50 transition-all";
+
+            const veteranCheck = veteranBtn.querySelector('.selection-check');
+            const rookieCheck = rookieBtn.querySelector('.selection-check');
+            if (veteranCheck && rookieCheck) {
+                veteranCheck.classList.toggle('hidden', type !== 'veteran');
+                rookieCheck.classList.toggle('hidden', type !== 'rookie');
             }
 
 
@@ -439,20 +456,27 @@
             const cardsContainer = document.getElementById('ui-skill-cards');
             cardsContainer.innerHTML = ''; // Clear existing
             data.cards.forEach(card => {
+                const isLocked = type === 'rookie' && card.status === 'LOCKED';
+                const progressColor = card.status === 'AT RISK' ? 'bg-red-400' : card.status === 'STABLE' ? 'bg-emerald-500' : 'bg-amber-400';
                 const html = `
-                    <div class="border rounded-lg p-3 ${type === 'rookie' && card.status === 'LOCKED' ? 'opacity-50' : ''}">
-                        <div class="flex justify-between items-center mb-2">
-                            <h4 class="text-sm font-bold text-primary">${card.title}</h4>
-                            <span class="text-[10px] px-1.5 py-0.5 rounded border ${card.statusColor} font-bold">${card.status}</span>
-                        </div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="text-xs text-primary">${card.level}</span>
-                            <div class="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                <div class="h-full bg-slate-400 w-[${card.progress}%]" style="width: ${card.progress}%"></div>
+                    <div class="border border-border rounded-xl p-4 bg-slate-50/70 shadow-sm h-full ${isLocked ? 'opacity-60' : ''}">
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="space-y-1">
+                                <h4 class="text-sm font-bold text-primary leading-tight">${card.title}</h4>
+                                <p class="text-[11px] text-secondary">${card.level} • ${card.xp}</p>
                             </div>
-                            <span class="text-[10px] text-secondary font-mono">${card.xp}</span>
+                            <span class="text-[10px] px-2 py-1 rounded-full border ${card.statusColor} font-bold">${card.status}</span>
                         </div>
-                        <div class="text-[10px] text-secondary">Recent success: <span class="font-bold">${card.recent}</span></div>
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="flex-1 h-2 bg-white rounded-full overflow-hidden border border-border">
+                                <div class="h-full ${progressColor}" style="width: ${card.progress}%"></div>
+                            </div>
+                            <span class="text-[10px] font-mono text-primary">${card.progress}%</span>
+                        </div>
+                        <div class="flex items-center justify-between text-[11px] text-secondary">
+                            <span>Recent success</span>
+                            <span class="font-bold text-primary">${card.recent}</span>
+                        </div>
                     </div>
                 `;
                 cardsContainer.innerHTML += html;
@@ -577,9 +601,6 @@
         // --- INIT ---
         window.onload = function() {
             initCharts();
-            // Initial render as veteran, but resetting innerHTML to clear duplicates
-            document.getElementById('btn-veteran').innerHTML = `<div class="font-bold text-primary">Analyst A-317 (Veteran)</div><div class="text-sm text-secondary">High performing, consistent streak.</div>`;
-            document.getElementById('btn-rookie').innerHTML = `<div class="font-bold text-primary">Analyst B-002 (Rookie)</div><div class="text-sm text-secondary">Struggling with basics, at risk.</div>`;
             updateTwin('veteran');
         };
 
